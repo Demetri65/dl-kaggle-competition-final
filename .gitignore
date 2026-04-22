@@ -1,0 +1,30 @@
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/
+*.py[cod]
+*.so
+.Python
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# Kaggle credentials
+kaggle.json
+.kaggle/
+
+# Project data and training artifacts
+data/*
+!data/.gitkeep
+models/
+checkpoints/
+outputs/
+runs/
+submissions/
+wandb/
+mlruns/
+
+# Notebook exports
+*.nbconvert.ipynb

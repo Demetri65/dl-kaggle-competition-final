@@ -1,0 +1,10 @@
+accelerate
+bitsandbytes
+datasets
+kaggle==2.0.1
+numpy
+pandas
+peft==0.18.1
+pillow
+torch
+transformers==4.57.6

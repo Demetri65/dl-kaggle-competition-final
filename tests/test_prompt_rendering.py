@@ -145,3 +145,27 @@ def test_f05_candidate_yes_no_full_context_prompt_matches_stage0_definition() ->
     assert "Skill:" in prompt
     assert "Is the candidate answer correct? Reply with Yes or No only." in prompt
     assert "Valid outputs" not in prompt
+
+
+def test_f06_multimodal_letter_meta_full_prompt_matches_stage0_definition() -> None:
+    formatter = PromptFormatter(load_experiment_config(REPO_ROOT, "f06_multimodal_letter_meta_full"))
+
+    prompt = formatter.render_prompt(SAMPLE_RECORD, split="val")
+
+    assert "<image>" in prompt
+    assert "Question:" in prompt
+    assert "Choices:" in prompt
+    assert "A. Evaporation" in prompt
+    assert "B. Condensation" in prompt
+    assert "Hint:" in prompt
+    assert "Lecture:" in prompt
+    assert "Task:" in prompt
+    assert "Grade:" in prompt
+    assert "Subject:" in prompt
+    assert "Topic:" in prompt
+    assert "Category:" in prompt
+    assert "Skill:" in prompt
+    assert "Candidate answer:" not in prompt
+    assert "Solution:" not in prompt
+    assert "Answer with the single correct letter." in prompt
+    assert "Valid outputs are: A, B, C." in prompt

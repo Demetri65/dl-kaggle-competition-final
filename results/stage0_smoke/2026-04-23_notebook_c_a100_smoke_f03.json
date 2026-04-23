@@ -1,0 +1,46 @@
+[
+  {
+    "experiment_id": "f03_multimodal_letter",
+    "output_dir": "/content/drive/MyDrive/p2p_runs/notebook_c_a100/smoke_f03/f03_multimodal_letter_seed42",
+    "run_mode": "train_eval",
+    "trainable_parameters": 4456448,
+    "target_lora_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "out_proj"
+    ],
+    "adapter_enabled": true,
+    "val_metrics": {
+      "overall_accuracy": 0.25,
+      "two_choice_accuracy": 0.8,
+      "two_choice_support": 5,
+      "yes_no_true_false_accuracy": null,
+      "yes_no_true_false_support": 0,
+      "accuracy_by_num_choices": {
+        "2": 0.8,
+        "3": 0.5,
+        "4": 0.0,
+        "5": 0.13043478260869565
+      },
+      "accuracy_by_task": {
+        "closed choice": 0.25
+      },
+      "accuracy_by_subject": {
+        "language science": 0.0,
+        "natural science": 0.26666666666666666
+      },
+      "prediction_distribution": {
+        "A": 0.25,
+        "B": 0.3125,
+        "C": 0.375,
+        "D": 0.03125,
+        "E": 0.03125
+      }
+    },
+    "val_predictions_path": "/content/drive/MyDrive/p2p_runs/notebook_c_a100/smoke_f03/f03_multimodal_letter_seed42/artifacts/val_predictions.jsonl",
+    "resolved_config_path": "/content/drive/MyDrive/p2p_runs/notebook_c_a100/smoke_f03/f03_multimodal_letter_seed42/resolved_config.yaml",
+    "run_summary_path": "/content/drive/MyDrive/p2p_runs/notebook_c_a100/smoke_f03/f03_multimodal_letter_seed42/run_summary.yaml"
+  }
+]

@@ -1,0 +1,9 @@
+experiment_id: f06_multimodal_letter_meta_full
+parent_experiment_id: f03_multimodal_letter
+fields:
+  task: true
+  grade: true
+  subject: true
+  topic: true
+  category: true
+  skill: true

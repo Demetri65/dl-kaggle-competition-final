@@ -266,7 +266,7 @@ def _run_hard_example_follow_up(
     if not hard_config.enabled:
         return
 
-    scorer = FormulationScorer(model_bundle.model, model_bundle.processor, train_dataset.formatter)
+    scorer = _build_scorer(model_bundle, train_dataset.formatter, config)
     eval_dataset = ScienceQADataset(
         train_dataset.examples,
         config=config,
@@ -300,6 +300,19 @@ def _run_hard_example_follow_up(
         extra_epochs=hard_config.epochs,
         optimizer=optimizer,
         scheduler=scheduler,
+    )
+
+
+def _build_scorer(
+    model_bundle: ModelBundle,
+    formatter: PromptFormatter,
+    config: ExperimentConfig,
+) -> FormulationScorer:
+    return FormulationScorer(
+        model_bundle.model,
+        model_bundle.processor,
+        formatter,
+        max_completion_batch_size=config.scoring.max_completion_batch_size,
     )
 
 
@@ -364,7 +377,7 @@ def run_experiment(repo_root: Path, config: ExperimentConfig) -> dict[str, Any]:
         model_bundle.model.save_pretrained(model_dir)
         model_bundle.processor.save_pretrained(processor_dir)
 
-    scorer = FormulationScorer(model_bundle.model, model_bundle.processor, formatter)
+    scorer = _build_scorer(model_bundle, formatter, config)
     val_metrics = None
     val_predictions_path = None
     if val_dataset is not None:

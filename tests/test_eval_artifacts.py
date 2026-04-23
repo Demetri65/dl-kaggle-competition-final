@@ -267,7 +267,11 @@ def test_plain_eval_only_run_uses_eval_datasets_without_train_split(monkeypatch,
             adapter_enabled=False,
         ),
     )
-    monkeypatch.setattr(train_module, "FormulationScorer", lambda model, processor, formatter: object())
+    def fake_scorer(model: object, processor: object, formatter: object, max_completion_batch_size: int = 8) -> object:
+        seen["max_completion_batch_size"] = max_completion_batch_size
+        return object()
+
+    monkeypatch.setattr(train_module, "FormulationScorer", fake_scorer)
 
     def fake_evaluate_dataset(dataset: object, scorer: object, output_path: Path | None = None, batch_size: int = 1):
         calls = seen.setdefault("datasets", [])
@@ -287,4 +291,5 @@ def test_plain_eval_only_run_uses_eval_datasets_without_train_split(monkeypatch,
     assert seen["used_eval_builder"] is True
     assert seen["datasets"] == [["val_dataset"], ["test_dataset"]]
     assert seen["eval_batch_size"] == config.training.eval_batch_size
+    assert seen["max_completion_batch_size"] == config.scoring.max_completion_batch_size
     assert summary["run_mode"] == "eval_only"

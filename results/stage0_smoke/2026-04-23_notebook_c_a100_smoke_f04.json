@@ -1,0 +1,46 @@
+[
+  {
+    "experiment_id": "f04_candidate_yes_no",
+    "output_dir": "/content/drive/MyDrive/p2p_runs/notebook_c_a100/smoke_f04/f04_candidate_yes_no_seed42",
+    "run_mode": "train_eval",
+    "trainable_parameters": 4456448,
+    "target_lora_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "out_proj"
+    ],
+    "adapter_enabled": true,
+    "val_metrics": {
+      "overall_accuracy": 0.375,
+      "two_choice_accuracy": 0.6,
+      "two_choice_support": 5,
+      "yes_no_true_false_accuracy": null,
+      "yes_no_true_false_support": 0,
+      "accuracy_by_num_choices": {
+        "2": 0.6,
+        "3": 1.0,
+        "4": 0.0,
+        "5": 0.30434782608695654
+      },
+      "accuracy_by_task": {
+        "closed choice": 0.375
+      },
+      "accuracy_by_subject": {
+        "language science": 0.0,
+        "natural science": 0.4
+      },
+      "prediction_distribution": {
+        "0": 0.15625,
+        "1": 0.375,
+        "2": 0.125,
+        "3": 0.1875,
+        "4": 0.15625
+      }
+    },
+    "val_predictions_path": "/content/drive/MyDrive/p2p_runs/notebook_c_a100/smoke_f04/f04_candidate_yes_no_seed42/artifacts/val_predictions.jsonl",
+    "resolved_config_path": "/content/drive/MyDrive/p2p_runs/notebook_c_a100/smoke_f04/f04_candidate_yes_no_seed42/resolved_config.yaml",
+    "run_summary_path": "/content/drive/MyDrive/p2p_runs/notebook_c_a100/smoke_f04/f04_candidate_yes_no_seed42/run_summary.yaml"
+  }
+]

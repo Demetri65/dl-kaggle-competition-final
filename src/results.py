@@ -87,6 +87,11 @@ def build_results_row(
                 "gradient_checkpointing": config.training.gradient_checkpointing,
             }
         ),
+        "scoring_settings": json_dumps(
+            {
+                "max_completion_batch_size": config.scoring.max_completion_batch_size,
+            }
+        ),
         "val_accuracy": val_metrics.get("overall_accuracy"),
         "two_choice_accuracy": val_metrics.get("two_choice_accuracy"),
         "two_choice_support": val_metrics.get("two_choice_support"),

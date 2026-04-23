@@ -1,0 +1,42 @@
+[
+  {
+    "eval_artifact_dir": null,
+    "experiment_id": "f02_multimodal_index",
+    "output_dir": "/content/drive/MyDrive/p2p_runs/notebook_a_t4/smoke/f02_multimodal_index_seed42",
+    "parent_experiment_id": null,
+    "resolved_config_path": "/content/drive/MyDrive/p2p_runs/notebook_a_t4/smoke/f02_multimodal_index_seed42/resolved_config.yaml",
+    "run_mode": "eval_only",
+    "run_name": "f02_multimodal_index_seed42",
+    "run_summary_path": "/content/drive/MyDrive/p2p_runs/notebook_a_t4/smoke/f02_multimodal_index_seed42/run_summary.yaml",
+    "seed": 42,
+    "submission_path": null,
+    "test_predictions_path": null,
+    "trainable_parameter_count": 0,
+    "two_choice_accuracy": 0.2,
+    "two_choice_support": 5,
+    "val_accuracy": 0.21875,
+    "val_predictions_path": "/content/drive/MyDrive/p2p_runs/notebook_a_t4/smoke/f02_multimodal_index_seed42/artifacts/val_predictions.jsonl",
+    "yes_no_true_false_accuracy": null,
+    "yes_no_true_false_support": 0
+  },
+  {
+    "eval_artifact_dir": null,
+    "experiment_id": "f03_multimodal_letter",
+    "output_dir": "/content/drive/MyDrive/p2p_runs/notebook_a_t4/smoke/f03_multimodal_letter_seed42",
+    "parent_experiment_id": null,
+    "resolved_config_path": "/content/drive/MyDrive/p2p_runs/notebook_a_t4/smoke/f03_multimodal_letter_seed42/resolved_config.yaml",
+    "run_mode": "eval_only",
+    "run_name": "f03_multimodal_letter_seed42",
+    "run_summary_path": "/content/drive/MyDrive/p2p_runs/notebook_a_t4/smoke/f03_multimodal_letter_seed42/run_summary.yaml",
+    "seed": 42,
+    "submission_path": null,
+    "test_predictions_path": null,
+    "trainable_parameter_count": 0,
+    "two_choice_accuracy": 0.8,
+    "two_choice_support": 5,
+    "val_accuracy": 0.28125,
+    "val_predictions_path": "/content/drive/MyDrive/p2p_runs/notebook_a_t4/smoke/f03_multimodal_letter_seed42/artifacts/val_predictions.jsonl",
+    "yes_no_true_false_accuracy": null,
+    "yes_no_true_false_support": 0
+  }
+]

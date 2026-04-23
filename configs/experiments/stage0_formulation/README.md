@@ -1,6 +1,6 @@
 # Stage 0 Formulations
 
-This project uses four Stage 0 formulations to compare how different answer-selection strategies behave before broader ablations.
+This project uses six Stage 0 formulations to compare how different answer-selection strategies behave before broader ablations.
 
 These formulations are intentionally narrow and should match their names exactly. Their purpose is to establish strong parent recipes for later stages.
 
@@ -164,6 +164,47 @@ These formulations are intentionally narrow and should match their names exactly
 
 ---
 
+## f06_multimodal_letter_meta_full
+
+**Type:** Restricted letter scoring with full metadata
+
+**Goal:** Predict the correct answer as its letter label while exposing the available metadata context.
+
+**Inputs included:**
+- image
+- question
+- full choices list
+- hint
+- lecture
+- task
+- grade
+- subject
+- topic
+- category
+- skill
+
+**Inputs excluded by default:**
+- solution
+
+**Target format:**
+- one valid letter label only
+- examples:
+  - `A`
+  - `B`
+  - `C`
+
+**How prediction works:**
+- the model is prompted with the image, choices, and richer metadata context
+- scoring is restricted to the valid letter labels for that example
+- if the question has 4 choices, only `A`, `B`, `C`, and `D` are considered
+- the label with the highest score is selected
+
+**Why this formulation exists:**
+- it isolates the effect of richer metadata while keeping the clean restricted-letter formulation from `f03`
+- it is a direct way to test whether metadata helps without switching to candidate verification
+
+---
+
 # Summary of differences
 
 | Formulation | Output style | Full choices shown | Candidate shown | Hint | Lecture | Metadata |
@@ -172,6 +213,7 @@ These formulations are intentionally narrow and should match their names exactly
 | `f03_multimodal_letter` | letter | yes | no | yes | yes | no |
 | `f04_candidate_yes_no` | yes/no | no | yes | no | no | no |
 | `f05_candidate_yes_no_full_context` | yes/no | yes | yes | yes | yes | yes |
+| `f06_multimodal_letter_meta_full` | letter | yes | no | yes | yes | yes |
 
 ---
 
@@ -182,6 +224,12 @@ Recommended Stage 0 use:
 - run `f02_multimodal_index` and `f03_multimodal_letter` as zero-shot comparisons on one T4 notebook
 - run `f04_candidate_yes_no` and `f05_candidate_yes_no_full_context` as zero-shot comparisons on another T4 notebook
 - train a simple LoRA baseline on `f02_multimodal_index` first
+- train `f06_multimodal_letter_meta_full` if you want to test richer metadata without changing away from restricted letter scoring
 - train `f05_candidate_yes_no_full_context` next only if candidate verification looks competitive
 
 This keeps the early experiment set focused while still testing meaningfully different formulations.
+
+Current smoke-train note (2026-04-23):
+- `f04_candidate_yes_no` was the strongest Stage 0 smoke-train result among the tested A100 baselines
+- `f03_multimodal_letter` remains the clean restricted-output comparator
+- `f06_multimodal_letter_meta_full` did not look strong enough to prioritize ahead of `f04` or `f03`

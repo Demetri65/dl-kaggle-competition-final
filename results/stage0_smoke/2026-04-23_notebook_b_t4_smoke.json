@@ -1,0 +1,42 @@
+[
+  {
+    "eval_artifact_dir": null,
+    "experiment_id": "f04_candidate_yes_no",
+    "output_dir": "/content/drive/MyDrive/p2p_runs/notebook_b_t4/smoke/f04_candidate_yes_no_seed42",
+    "parent_experiment_id": null,
+    "resolved_config_path": "/content/drive/MyDrive/p2p_runs/notebook_b_t4/smoke/f04_candidate_yes_no_seed42/resolved_config.yaml",
+    "run_mode": "eval_only",
+    "run_name": "f04_candidate_yes_no_seed42",
+    "run_summary_path": "/content/drive/MyDrive/p2p_runs/notebook_b_t4/smoke/f04_candidate_yes_no_seed42/run_summary.yaml",
+    "seed": 42,
+    "submission_path": null,
+    "test_predictions_path": null,
+    "trainable_parameter_count": 0,
+    "two_choice_accuracy": 0.6,
+    "two_choice_support": 5,
+    "val_accuracy": 0.3125,
+    "val_predictions_path": "/content/drive/MyDrive/p2p_runs/notebook_b_t4/smoke/f04_candidate_yes_no_seed42/artifacts/val_predictions.jsonl",
+    "yes_no_true_false_accuracy": null,
+    "yes_no_true_false_support": 0
+  },
+  {
+    "eval_artifact_dir": null,
+    "experiment_id": "f05_candidate_yes_no_full_context",
+    "output_dir": "/content/drive/MyDrive/p2p_runs/notebook_b_t4/smoke/f05_candidate_yes_no_full_context_seed42",
+    "parent_experiment_id": "f04_candidate_yes_no",
+    "resolved_config_path": "/content/drive/MyDrive/p2p_runs/notebook_b_t4/smoke/f05_candidate_yes_no_full_context_seed42/resolved_config.yaml",
+    "run_mode": "eval_only",
+    "run_name": "f05_candidate_yes_no_full_context_seed42",
+    "run_summary_path": "/content/drive/MyDrive/p2p_runs/notebook_b_t4/smoke/f05_candidate_yes_no_full_context_seed42/run_summary.yaml",
+    "seed": 42,
+    "submission_path": null,
+    "test_predictions_path": null,
+    "trainable_parameter_count": 0,
+    "two_choice_accuracy": 0.2,
+    "two_choice_support": 5,
+    "val_accuracy": 0.15625,
+    "val_predictions_path": "/content/drive/MyDrive/p2p_runs/notebook_b_t4/smoke/f05_candidate_yes_no_full_context_seed42/artifacts/val_predictions.jsonl",
+    "yes_no_true_false_accuracy": null,
+    "yes_no_true_false_support": 0
+  }
+]

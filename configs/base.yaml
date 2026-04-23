@@ -44,6 +44,8 @@ training:
   fp16: false
   gradient_checkpointing: true
   max_new_tokens: 8
+scoring:
+  max_completion_batch_size: 8
 sampling:
   mode: uniform
   hard_example_follow_up:

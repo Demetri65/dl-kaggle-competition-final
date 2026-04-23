@@ -53,6 +53,23 @@ def test_stage0_formulations_resolve_to_intended_modes_templates_and_fields() ->
                 "skill",
             ],
         },
+        "f06_multimodal_letter_meta_full": {
+            "mode": "restricted_letter_scoring",
+            "template": "strict_letter_output",
+            "fields": [
+                "image",
+                "question",
+                "choices",
+                "hint",
+                "lecture",
+                "task",
+                "grade",
+                "subject",
+                "topic",
+                "category",
+                "skill",
+            ],
+        },
     }
 
     for experiment_id, expected in expectations.items():
@@ -66,14 +83,29 @@ def test_cli_overrides_take_precedence() -> None:
     config = load_experiment_config(
         REPO_ROOT,
         "f02_multimodal_index",
-        cli_overrides=["training.learning_rate=0.0001", "fields.solution=true"],
+        cli_overrides=[
+            "training.learning_rate=0.0001",
+            "fields.solution=true",
+            "scoring.max_completion_batch_size=64",
+        ],
         seed=7,
         output_dir="tmp_outputs",
     )
     assert config.training.learning_rate == pytest.approx(0.0001)
     assert config.fields.solution is True
+    assert config.scoring.max_completion_batch_size == 64
     assert config.runtime.seed == 7
     assert config.runtime.output_root == "tmp_outputs"
+
+
+def test_cli_overrides_coerce_scientific_notation_strings_for_float_fields() -> None:
+    config = load_experiment_config(
+        REPO_ROOT,
+        "f06_multimodal_letter_meta_full",
+        cli_overrides=["training.learning_rate=5e-5", "lora.dropout=1e-1"],
+    )
+    assert config.training.learning_rate == pytest.approx(5e-5)
+    assert config.lora.dropout == pytest.approx(1e-1)
 
 
 def test_invalid_template_formulation_combo_fails() -> None:
@@ -269,6 +301,7 @@ def test_eval_artifact_config_uses_saved_resolved_config_with_runtime_overrides(
                     "gradient_checkpointing": False,
                     "max_new_tokens": 12,
                 },
+                "scoring": {"max_completion_batch_size": 4},
                 "sampling": {"mode": "balanced_answer_index"},
                 "runtime": {
                     "seed": 11,
@@ -292,6 +325,8 @@ def test_eval_artifact_config_uses_saved_resolved_config_with_runtime_overrides(
         "f02_multimodal_index",
         cli_overrides=[
             "training.epochs=0",
+            "training.eval_batch_size=24",
+            "scoring.max_completion_batch_size=48",
             f"runtime.eval_artifact_dir={artifact_dir.relative_to(tmp_path)}",
             "runtime.predict_test=true",
             "runtime.num_workers=3",
@@ -310,6 +345,8 @@ def test_eval_artifact_config_uses_saved_resolved_config_with_runtime_overrides(
     assert effective.image.resize_mode == "aspect_pad"
     assert effective.training.learning_rate == pytest.approx(0.0002)
     assert effective.training.epochs == 0
+    assert effective.training.eval_batch_size == 24
+    assert effective.scoring.max_completion_batch_size == 48
     assert effective.runtime.output_root == "custom_outputs"
     assert effective.runtime.seed == 99
     assert effective.runtime.predict_test is True

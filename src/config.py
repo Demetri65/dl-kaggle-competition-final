@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Mapping, get_type_hints
+from typing import Any, Mapping, get_args, get_origin, get_type_hints
 
 import yaml
 
@@ -34,6 +34,12 @@ EVAL_RUNTIME_OVERRIDE_KEYS = (
     "save_predictions",
     "max_val_examples",
     "max_test_examples",
+)
+EVAL_TRAINING_OVERRIDE_KEYS = (
+    "eval_batch_size",
+)
+EVAL_SCORING_OVERRIDE_KEYS = (
+    "max_completion_batch_size",
 )
 
 
@@ -107,6 +113,11 @@ class TrainingConfig:
 
 
 @dataclass
+class ScoringConfig:
+    max_completion_batch_size: int = 8
+
+
+@dataclass
 class HardExampleConfig:
     enabled: bool = False
     epochs: int = 1
@@ -147,6 +158,7 @@ class ExperimentConfig:
     prompting: PromptingConfig = field(default_factory=PromptingConfig)
     lora: LoraConfigSpec = field(default_factory=LoraConfigSpec)
     training: TrainingConfig = field(default_factory=TrainingConfig)
+    scoring: ScoringConfig = field(default_factory=ScoringConfig)
     sampling: SamplingConfig = field(default_factory=SamplingConfig)
     runtime: RuntimeConfig = field(default_factory=RuntimeConfig)
 
@@ -278,6 +290,39 @@ def overrides_to_dict(overrides: list[str] | None) -> dict[str, Any]:
     return apply_overrides({}, overrides)
 
 
+def _coerce_scalar(value: Any, target_type: type[Any]) -> Any:
+    if target_type is float and isinstance(value, str):
+        return float(value)
+    if target_type is int and isinstance(value, str):
+        return int(value)
+    if target_type is bool and isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "false"}:
+            return normalized == "true"
+    if target_type is str and not isinstance(value, str):
+        return str(value)
+    return value
+
+
+def _coerce_value(field_type: Any, value: Any) -> Any:
+    origin = get_origin(field_type)
+    if origin is None:
+        if isinstance(field_type, type):
+            return _coerce_scalar(value, field_type)
+        return value
+
+    if origin is list:
+        element_types = get_args(field_type)
+        if isinstance(value, list) and len(element_types) == 1:
+            return [_coerce_value(element_types[0], item) for item in value]
+        return value
+
+    union_types = [union_type for union_type in get_args(field_type) if union_type is not type(None)]
+    if union_types and len(union_types) == 1:
+        return _coerce_value(union_types[0], value)
+    return value
+
+
 def _build_dataclass(dataclass_type: type[Any], data: Mapping[str, Any]) -> Any:
     kwargs: dict[str, Any] = {}
     type_hints = get_type_hints(dataclass_type)
@@ -289,7 +334,7 @@ def _build_dataclass(dataclass_type: type[Any], data: Mapping[str, Any]) -> Any:
         if hasattr(field_type, "__dataclass_fields__") and isinstance(value, Mapping):
             kwargs[field_info.name] = _build_dataclass(field_type, value)
         else:
-            kwargs[field_info.name] = value
+            kwargs[field_info.name] = _coerce_value(field_type, value)
     return dataclass_type(**kwargs)
 
 
@@ -338,7 +383,16 @@ def resolve_effective_config(repo_root: Path, requested_config: ExperimentConfig
 
     training_data = dict(merged["training"])
     training_data["epochs"] = 0
+    requested_training = requested_config.to_dict()["training"]
+    for key in EVAL_TRAINING_OVERRIDE_KEYS:
+        training_data[key] = requested_training[key]
     merged["training"] = training_data
+
+    scoring_data = dict(merged.get("scoring") or {})
+    requested_scoring = requested_config.to_dict()["scoring"]
+    for key in EVAL_SCORING_OVERRIDE_KEYS:
+        scoring_data[key] = requested_scoring[key]
+    merged["scoring"] = scoring_data
 
     runtime_data = dict(merged["runtime"])
     requested_runtime = requested_config.to_dict()["runtime"]
@@ -421,6 +475,8 @@ def validate_config(config: ExperimentConfig) -> None:
         raise ValueError("Training epochs cannot be negative.")
     if config.training.batch_size <= 0 or config.training.eval_batch_size <= 0:
         raise ValueError("Batch sizes must be positive.")
+    if config.scoring.max_completion_batch_size <= 0:
+        raise ValueError("Scoring completion batch size must be positive.")
     if config.training.gradient_accumulation <= 0:
         raise ValueError("Gradient accumulation must be positive.")
     if config.runtime.eval_artifact_dir and config.training.epochs != 0:

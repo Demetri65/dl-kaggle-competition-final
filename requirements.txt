@@ -6,5 +6,7 @@ numpy
 pandas
 peft==0.18.1
 pillow
+PyYAML
+pytest
 torch
 transformers==4.57.6

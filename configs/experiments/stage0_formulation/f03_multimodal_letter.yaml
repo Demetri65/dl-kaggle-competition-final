@@ -1,0 +1,6 @@
+experiment_id: f03_multimodal_letter
+formulation:
+  mode: restricted_letter_scoring
+prompting:
+  template: strict_letter_output
+

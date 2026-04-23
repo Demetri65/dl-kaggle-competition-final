@@ -1,0 +1,9 @@
+experiment_id: f04_candidate_yes_no
+formulation:
+  mode: candidate_yes_no
+prompting:
+  template: candidate_yes_no
+fields:
+  choices: false
+  hint: false
+  lecture: false

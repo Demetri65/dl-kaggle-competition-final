@@ -1,0 +1,4 @@
+experiment_id: i02_longedge_512
+image:
+  target_long_edge: 512
+

@@ -1,0 +1,64 @@
+experiment_id: base
+data:
+  data_dir: data
+model:
+  model_id: HuggingFaceTB/SmolVLM-500M-Instruct
+  local_files_only: false
+formulation:
+  mode: restricted_index_scoring
+fields:
+  image: true
+  question: true
+  choices: true
+  hint: true
+  lecture: true
+  task: false
+  grade: false
+  subject: false
+  topic: false
+  category: false
+  skill: false
+  solution: false
+image:
+  resize_mode: stretch
+  target_long_edge: 384
+prompting:
+  template: strict_index_output
+lora:
+  enabled: true
+  rank: 8
+  alpha: 16
+  dropout: 0.05
+  target_preset: attn
+  target_modules: []
+  trainable_parameter_cap: 5000000
+training:
+  epochs: 1
+  learning_rate: 5.0e-5
+  warmup_ratio: 0.05
+  weight_decay: 0.01
+  batch_size: 1
+  eval_batch_size: 1
+  gradient_accumulation: 4
+  bf16: true
+  fp16: false
+  gradient_checkpointing: true
+  max_new_tokens: 8
+sampling:
+  mode: uniform
+  hard_example_follow_up:
+    enabled: false
+    epochs: 1
+    max_examples:
+runtime:
+  seed: 42
+  output_root: outputs
+  predict_test: false
+  final_retrain: false
+  eval_artifact_dir:
+  num_workers: 0
+  logging_steps: 10
+  save_predictions: true
+  max_train_examples:
+  max_val_examples:
+  max_test_examples:

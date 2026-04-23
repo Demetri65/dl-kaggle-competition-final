@@ -1,0 +1,4 @@
+experiment_id: i04_aspect_pad
+image:
+  resize_mode: aspect_pad
+

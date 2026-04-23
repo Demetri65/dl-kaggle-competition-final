@@ -1,0 +1,6 @@
+experiment_id: x06_q_choices_hint_lecture_meta_full
+parent_experiment_id: x05_q_choices_hint_lecture_meta_lite
+fields:
+  topic: true
+  category: true
+  skill: true

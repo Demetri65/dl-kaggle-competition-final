@@ -1,0 +1,6 @@
+experiment_id: t02_rank16_attn
+lora:
+  rank: 16
+  alpha: 32
+  target_preset: attn
+

@@ -1,0 +1,4 @@
+experiment_id: t05_lr_1e4
+training:
+  learning_rate: 1.0e-4
+

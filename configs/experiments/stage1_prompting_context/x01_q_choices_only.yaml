@@ -1,0 +1,6 @@
+experiment_id: x01_q_choices_only
+fields:
+  image: false
+  hint: false
+  lecture: false
+

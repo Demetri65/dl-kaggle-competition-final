@@ -1,0 +1,6 @@
+experiment_id: t04_rank16_attn_connector
+lora:
+  rank: 16
+  alpha: 32
+  target_preset: attn_connector
+

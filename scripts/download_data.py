@@ -80,9 +80,31 @@ def extract_archives(root: Path) -> None:
 
         for zip_path in archives:
             print(f"Extracting {zip_path.relative_to(root)}")
+            if not zipfile.is_zipfile(zip_path):
+                raise zipfile.BadZipFile(f"Invalid zip archive: {zip_path}")
             with zipfile.ZipFile(zip_path) as zf:
                 zf.extractall(zip_path.parent)
             processed.add(zip_path)
+
+
+def run_kaggle_download(command: list[str], env: dict[str, str]) -> None:
+    result = subprocess.run(
+        command,
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    if result.stdout:
+        print(result.stdout, end="")
+    if result.returncode != 0:
+        if result.stderr:
+            print(result.stderr, end="", file=sys.stderr)
+        raise RuntimeError(
+            "Kaggle competition download failed. "
+            "Confirm that KAGGLE_API_TOKEN is valid and that your Kaggle account has accepted "
+            f"the competition rules for '{COMPETITION}'."
+        )
 
 
 def main() -> None:
@@ -106,9 +128,23 @@ def main() -> None:
         if args.force:
             command.append("-o")
 
-        subprocess.run(command, check=True, env=kaggle_env)
+        run_kaggle_download(command, kaggle_env)
 
-    extract_archives(DATA_DIR)
+        try:
+            extract_archives(DATA_DIR)
+        except zipfile.BadZipFile as exc:
+            if args.force:
+                raise RuntimeError(
+                    f"Encountered an invalid zip archive after a forced download: {exc}"
+                ) from exc
+            print(
+                f"Detected an invalid zip archive under {DATA_DIR}. "
+                "Retrying the Kaggle download once with overwrite enabled.",
+                file=sys.stderr,
+            )
+            retry_command = [*command, "-o"] if "-o" not in command else command
+            run_kaggle_download(retry_command, kaggle_env)
+            extract_archives(DATA_DIR)
 
     nested_dirs = [path for path in DATA_DIR.iterdir() if path.is_dir()]
     if len(nested_dirs) == 1 and not any((DATA_DIR / name).exists() for name in EXPECTED_ENTRIES):

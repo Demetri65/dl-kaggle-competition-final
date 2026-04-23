@@ -88,3 +88,111 @@ Use GitHub as the source of truth:
 - Avoid both editing the same notebook at the same time.
 
 If notebook conflicts become a problem, the next step is to move reusable logic into Python modules and keep notebooks thin. That can happen later without changing the `data/` contract.
+
+## Experiment Framework
+
+The repo now includes a config-driven train/eval pipeline for SmolVLM ablations:
+
+- Base config: `configs/base.yaml`
+- Experiment overrides: `configs/experiments/<stage>/*.yaml`
+- Single-run entrypoint: `scripts/run_experiment.py`
+- Stage sweep entrypoint: `scripts/run_stage.py`
+- Final submission utility: `scripts/build_final_submission.py`
+- Ensemble submission utility: `scripts/build_ensemble_submission.py`
+- Results summary: `scripts/summarize_results.py`
+
+Experiment configs are organized into stage folders, but you can still run them by unique experiment id such as `f03_multimodal_letter`.
+Config composition supports a primary `parent_experiment_id` plus optional `merge_experiment_ids` overlays.
+
+### Run One Experiment
+
+```bash
+python3 scripts/run_experiment.py --experiment f02_multimodal_index
+```
+
+Example with a small override:
+
+```bash
+python3 scripts/run_experiment.py \
+  --experiment f03_multimodal_letter \
+  --set training.epochs=2 \
+  --seed 7
+```
+
+Stage 0 eval-only screening run:
+
+```bash
+python3 scripts/run_experiment.py \
+  --experiment f02_multimodal_index \
+  --set lora.enabled=false \
+  --set training.epochs=0
+```
+
+Artifact-backed eval-only rerun:
+
+```bash
+python3 scripts/run_experiment.py \
+  --experiment f02_multimodal_index \
+  --set training.epochs=0 \
+  --set runtime.eval_artifact_dir=outputs/f02_multimodal_index_seed42
+```
+
+### Run A Whole Stage
+
+```bash
+python3 scripts/run_stage.py \
+  f02_multimodal_index f03_multimodal_letter f04_candidate_yes_no
+```
+
+Example stage sweep that also writes test predictions and an averaged ensemble submission:
+
+```bash
+python3 scripts/run_stage.py \
+  l01_seed1 l01_seed2 l01_seed3 \
+  --predict-test \
+  --ensemble-name seed_ensemble
+```
+
+Stage sweep with best-parent selection and child-config promotion:
+
+```bash
+python3 scripts/run_stage.py \
+  f02_multimodal_index f03_multimodal_letter f04_candidate_yes_no \
+  --stage-name stage0_screen \
+  --select-best-by val_accuracy \
+  --promote-best-to stage1_parent_plus_lr \
+  --child-set training.learning_rate=1.0e-4
+```
+
+### Summarize Results
+
+```bash
+python3 scripts/summarize_results.py --sort-by val_accuracy --top 10
+```
+
+### Build Submission CSVs
+
+Build a final submission from one saved run:
+
+```bash
+python3 scripts/build_final_submission.py \
+  --run-dir outputs/f02_multimodal_index_seed42
+```
+
+Build an ensemble submission from multiple saved runs:
+
+```bash
+python3 scripts/build_ensemble_submission.py \
+  --run-dir outputs/l01_seed1_seed1 \
+  --run-dir outputs/l01_seed2_seed2 \
+  --run-dir outputs/l01_seed3_seed3 \
+  --ensemble-name seed_ensemble
+```
+
+### Outputs
+
+- Per-run artifacts are written under `outputs/<experiment_id>_seed<seed>/`
+- Validation and test prediction artifacts are written to `artifacts/*.jsonl`
+- Central run metadata is appended to `results/experiments.csv`
+- Stage summaries are always written under `outputs/stages/<stage_name>/`
+- Child configs can inherit via `parent_experiment_id` and optionally merge extra overlays via `merge_experiment_ids`

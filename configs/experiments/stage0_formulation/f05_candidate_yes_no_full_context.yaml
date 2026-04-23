@@ -1,0 +1,12 @@
+experiment_id: f05_candidate_yes_no_full_context
+parent_experiment_id: f04_candidate_yes_no
+fields:
+  choices: true
+  hint: true
+  lecture: true
+  task: true
+  grade: true
+  subject: true
+  topic: true
+  category: true
+  skill: true

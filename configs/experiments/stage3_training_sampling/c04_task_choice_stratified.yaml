@@ -1,0 +1,4 @@
+experiment_id: c04_task_choice_stratified
+sampling:
+  mode: stratified_num_choices_task
+

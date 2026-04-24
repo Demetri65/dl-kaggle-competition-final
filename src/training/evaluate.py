@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
@@ -94,6 +95,7 @@ def evaluate_dataset(
     scorer: Any,
     output_path: Path | None = None,
     batch_size: int = 1,
+    progress_label: str | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]], Path | None]:
     if batch_size <= 0:
         raise ValueError("Evaluation batch size must be positive.")
@@ -102,13 +104,26 @@ def evaluate_dataset(
 
     predictions: list[dict[str, Any]] = []
     total_items = len(dataset)
+    total_batches = (total_items + batch_size - 1) // batch_size
+    started_at = time.monotonic()
+    if progress_label:
+        print(f"{progress_label}: evaluating {total_items} items in {total_batches} batches", flush=True)
     for start_index in range(0, total_items, batch_size):
+        batch_number = start_index // batch_size + 1
         batch_items = [dataset[index] for index in range(start_index, min(start_index + batch_size, total_items))]
         batch_predictions = _predict_batch(scorer, batch_items)
         predictions.extend(
             _build_prediction_row(item, result)
             for item, result in zip(batch_items, batch_predictions)
         )
+        if progress_label and (batch_number == 1 or batch_number == total_batches or batch_number % 10 == 0):
+            elapsed = time.monotonic() - started_at
+            processed = min(start_index + batch_size, total_items)
+            print(
+                f"{progress_label}: batch {batch_number}/{total_batches} "
+                f"items {processed}/{total_items} elapsed {elapsed:.1f}s",
+                flush=True,
+            )
 
     saved_path = None
     if output_path is not None:

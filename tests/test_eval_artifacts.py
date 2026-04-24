@@ -273,7 +273,13 @@ def test_plain_eval_only_run_uses_eval_datasets_without_train_split(monkeypatch,
 
     monkeypatch.setattr(train_module, "FormulationScorer", fake_scorer)
 
-    def fake_evaluate_dataset(dataset: object, scorer: object, output_path: Path | None = None, batch_size: int = 1):
+    def fake_evaluate_dataset(
+        dataset: object,
+        scorer: object,
+        output_path: Path | None = None,
+        batch_size: int = 1,
+        progress_label: str | None = None,
+    ):
         calls = seen.setdefault("datasets", [])
         assert isinstance(calls, list)
         calls.append(dataset)

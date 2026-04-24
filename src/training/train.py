@@ -387,6 +387,7 @@ def run_experiment(repo_root: Path, config: ExperimentConfig) -> dict[str, Any]:
             scorer,
             output_path=val_output_path,
             batch_size=config.training.eval_batch_size,
+            progress_label="val",
         )
 
     test_predictions_path = None
@@ -398,6 +399,7 @@ def run_experiment(repo_root: Path, config: ExperimentConfig) -> dict[str, Any]:
             scorer,
             output_path=test_output_path,
             batch_size=config.training.eval_batch_size,
+            progress_label="test",
         )
         submission_path = save_submission(test_predictions, output_dir / "artifacts" / "submission.csv")
 

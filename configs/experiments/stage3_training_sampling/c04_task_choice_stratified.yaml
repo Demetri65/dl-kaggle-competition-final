@@ -1,4 +1,7 @@
 experiment_id: c04_task_choice_stratified
+parent_experiment_id: f04_candidate_yes_no
+lora:
+  rank: 16
+  alpha: 32
 sampling:
   mode: stratified_num_choices_task
-

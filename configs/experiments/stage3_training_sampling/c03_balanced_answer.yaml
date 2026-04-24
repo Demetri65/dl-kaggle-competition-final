@@ -1,4 +1,7 @@
 experiment_id: c03_balanced_answer
+parent_experiment_id: f04_candidate_yes_no
+lora:
+  rank: 16
+  alpha: 32
 sampling:
   mode: balanced_answer_index
-

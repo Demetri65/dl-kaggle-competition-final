@@ -41,6 +41,16 @@ def test_stage0_formulations_resolve_to_intended_modes_templates_and_fields() ->
             "template": "candidate_yes_no",
             "fields": ["image", "question", "hint"],
         },
+        "c03_balanced_answer": {
+            "mode": "candidate_yes_no",
+            "template": "candidate_yes_no",
+            "fields": ["image", "question"],
+        },
+        "c04_task_choice_stratified": {
+            "mode": "candidate_yes_no",
+            "template": "candidate_yes_no",
+            "fields": ["image", "question"],
+        },
     }
 
     for experiment_id, expected in expectations.items():
@@ -48,6 +58,22 @@ def test_stage0_formulations_resolve_to_intended_modes_templates_and_fields() ->
         assert config.formulation.mode == expected["mode"]
         assert config.prompting.template == expected["template"]
         assert selected_fields(config) == expected["fields"]
+
+
+def test_stage3_sampling_configs_use_selected_f04_parent() -> None:
+    expectations = {
+        "c03_balanced_answer": "balanced_answer_index",
+        "c04_task_choice_stratified": "stratified_num_choices_task",
+    }
+
+    for experiment_id, sampling_mode in expectations.items():
+        config = load_experiment_config(REPO_ROOT, experiment_id)
+        assert config.parent_experiment_id == "f04_candidate_yes_no"
+        assert config.formulation.mode == "candidate_yes_no"
+        assert config.prompting.template == "candidate_yes_no"
+        assert config.lora.rank == 16
+        assert config.lora.alpha == 32
+        assert config.sampling.mode == sampling_mode
 
 
 def test_cli_overrides_take_precedence() -> None:

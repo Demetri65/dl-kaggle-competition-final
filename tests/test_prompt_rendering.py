@@ -31,7 +31,7 @@ SAMPLE_RECORD = {
 def test_prompt_respects_enabled_fields() -> None:
     config = load_experiment_config(
         REPO_ROOT,
-        "f02_multimodal_index",
+        "f03_multimodal_letter",
         cli_overrides=["fields.image=false", "fields.hint=false", "fields.lecture=false"],
     )
     formatter = PromptFormatter(config)
@@ -46,7 +46,7 @@ def test_prompt_respects_enabled_fields() -> None:
 def test_solution_is_train_only() -> None:
     config = load_experiment_config(
         REPO_ROOT,
-        "f02_multimodal_index",
+        "f03_multimodal_letter",
         cli_overrides=["fields.solution=true"],
     )
     formatter = PromptFormatter(config)
@@ -54,29 +54,6 @@ def test_solution_is_train_only() -> None:
     val_prompt = formatter.render_prompt(SAMPLE_RECORD, split="val")
     assert "Solution:" in train_prompt
     assert "Solution:" not in val_prompt
-
-
-def test_f02_multimodal_index_prompt_matches_stage0_definition() -> None:
-    formatter = PromptFormatter(load_experiment_config(REPO_ROOT, "f02_multimodal_index"))
-
-    prompt = formatter.render_prompt(SAMPLE_RECORD, split="val")
-
-    assert "<image>" in prompt
-    assert "Question:" in prompt
-    assert "Choices:" in prompt
-    assert "0. Evaporation" in prompt
-    assert "1. Condensation" in prompt
-    assert "Hint:" in prompt
-    assert "Lecture:" in prompt
-    assert "Candidate answer:" not in prompt
-    assert "Task:" not in prompt
-    assert "Grade:" not in prompt
-    assert "Subject:" not in prompt
-    assert "Topic:" not in prompt
-    assert "Category:" not in prompt
-    assert "Skill:" not in prompt
-    assert "Answer with the single correct index." in prompt
-    assert "Valid outputs are: 0, 1, 2." in prompt
 
 
 def test_f03_multimodal_letter_prompt_matches_stage0_definition() -> None:
@@ -124,8 +101,8 @@ def test_f04_candidate_yes_no_prompt_matches_stage0_definition() -> None:
     assert "Valid outputs" not in prompt
 
 
-def test_f05_candidate_yes_no_full_context_prompt_matches_stage0_definition() -> None:
-    formatter = PromptFormatter(load_experiment_config(REPO_ROOT, "f05_candidate_yes_no_full_context"))
+def test_x11_f04_candidate_choices_prompt_adds_full_choices_for_eval_screen() -> None:
+    formatter = PromptFormatter(load_experiment_config(REPO_ROOT, "x11_f04_candidate_choices"))
 
     prompt = formatter.render_prompt(SAMPLE_RECORD, split="val", candidate_index=1)
 
@@ -135,37 +112,35 @@ def test_f05_candidate_yes_no_full_context_prompt_matches_stage0_definition() ->
     assert "0. Evaporation" in prompt
     assert "Candidate answer:" in prompt
     assert "Condensation" in prompt
-    assert "Hint:" in prompt
-    assert "Lecture:" in prompt
-    assert "Task:" in prompt
-    assert "Grade:" in prompt
-    assert "Subject:" in prompt
-    assert "Topic:" in prompt
-    assert "Category:" in prompt
-    assert "Skill:" in prompt
+    assert "Hint:" not in prompt
+    assert "Lecture:" not in prompt
+    assert "Task:" not in prompt
+    assert "Grade:" not in prompt
+    assert "Subject:" not in prompt
+    assert "Topic:" not in prompt
+    assert "Category:" not in prompt
+    assert "Skill:" not in prompt
     assert "Is the candidate answer correct? Reply with Yes or No only." in prompt
     assert "Valid outputs" not in prompt
 
 
-def test_f06_multimodal_letter_meta_full_prompt_matches_stage0_definition() -> None:
-    formatter = PromptFormatter(load_experiment_config(REPO_ROOT, "f06_multimodal_letter_meta_full"))
+def test_x12_f04_candidate_hint_prompt_adds_hint_for_eval_screen() -> None:
+    formatter = PromptFormatter(load_experiment_config(REPO_ROOT, "x12_f04_candidate_hint"))
 
-    prompt = formatter.render_prompt(SAMPLE_RECORD, split="val")
+    prompt = formatter.render_prompt(SAMPLE_RECORD, split="val", candidate_index=1)
 
     assert "<image>" in prompt
     assert "Question:" in prompt
-    assert "Choices:" in prompt
-    assert "A. Evaporation" in prompt
-    assert "B. Condensation" in prompt
+    assert "Choices:" not in prompt
+    assert "Candidate answer:" in prompt
+    assert "Condensation" in prompt
     assert "Hint:" in prompt
-    assert "Lecture:" in prompt
-    assert "Task:" in prompt
-    assert "Grade:" in prompt
-    assert "Subject:" in prompt
-    assert "Topic:" in prompt
-    assert "Category:" in prompt
-    assert "Skill:" in prompt
-    assert "Candidate answer:" not in prompt
-    assert "Solution:" not in prompt
-    assert "Answer with the single correct letter." in prompt
-    assert "Valid outputs are: A, B, C." in prompt
+    assert "Lecture:" not in prompt
+    assert "Task:" not in prompt
+    assert "Grade:" not in prompt
+    assert "Subject:" not in prompt
+    assert "Topic:" not in prompt
+    assert "Category:" not in prompt
+    assert "Skill:" not in prompt
+    assert "Is the candidate answer correct? Reply with Yes or No only." in prompt
+    assert "Valid outputs" not in prompt

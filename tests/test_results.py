@@ -34,7 +34,7 @@ def test_append_results_row_expands_existing_schema(tmp_path: Path) -> None:
 def test_build_results_row_includes_metadata_paths() -> None:
     config = load_experiment_config(
         REPO_ROOT,
-        "f02_multimodal_index",
+        "f03_multimodal_letter",
         cli_overrides=["training.epochs=0", "runtime.eval_artifact_dir=outputs/source_run"],
         output_dir="custom_outputs",
     )
@@ -46,8 +46,8 @@ def test_build_results_row_includes_metadata_paths() -> None:
             "matched_lora_modules": [],
             "unmatched_lora_targets": [],
             "val_metrics": {"overall_accuracy": 0.8},
-            "resolved_config_path": "custom_outputs/f02_multimodal_index_seed42/resolved_config.yaml",
-            "run_summary_path": "custom_outputs/f02_multimodal_index_seed42/run_summary.yaml",
+            "resolved_config_path": "custom_outputs/f03_multimodal_letter_seed42/resolved_config.yaml",
+            "run_summary_path": "custom_outputs/f03_multimodal_letter_seed42/run_summary.yaml",
             "eval_artifact_dir": "outputs/source_run",
         },
     )

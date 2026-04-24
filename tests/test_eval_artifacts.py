@@ -27,7 +27,7 @@ def test_configure_processor_only_sets_missing_pad_token() -> None:
     processor.image_processor.size = {"longest_edge": 2048}
     processor.image_processor.max_image_size = {"longest_edge": 512}
 
-    config = load_experiment_config(REPO_ROOT, "f02_multimodal_index")
+    config = load_experiment_config(REPO_ROOT, "f03_multimodal_letter")
     _configure_processor(processor, config)
 
     assert processor.tokenizer.pad_token == "<eos>"
@@ -64,7 +64,7 @@ def test_artifact_loader_prefers_saved_processor_and_adapter(monkeypatch, tmp_pa
 
     config = load_experiment_config(
         REPO_ROOT,
-        "f02_multimodal_index",
+        "f03_multimodal_letter",
         cli_overrides=["training.epochs=0", f"runtime.eval_artifact_dir={artifact_dir}"],
     )
     calls: dict[str, object] = {}
@@ -110,7 +110,7 @@ def test_artifact_loader_falls_back_to_saved_model_dir_without_adapter(monkeypat
 
     config = load_experiment_config(
         REPO_ROOT,
-        "f02_multimodal_index",
+        "f03_multimodal_letter",
         cli_overrides=["training.epochs=0", f"runtime.eval_artifact_dir={artifact_dir}"],
     )
     calls: dict[str, object] = {}
@@ -142,7 +142,7 @@ def test_artifact_loader_falls_back_to_saved_model_dir_without_adapter(monkeypat
 def test_eval_only_dataset_builder_skips_train_split(monkeypatch) -> None:
     config = load_experiment_config(
         REPO_ROOT,
-        "f02_multimodal_index",
+        "f03_multimodal_letter",
         cli_overrides=["training.epochs=0", "runtime.predict_test=true"],
     )
     formatter = PromptFormatter(config)
@@ -206,7 +206,7 @@ def test_candidate_yes_no_eval_dataset_keeps_one_item_per_example() -> None:
 def test_missing_image_path_uses_blank_image_when_image_field_enabled() -> None:
     config = load_experiment_config(
         REPO_ROOT,
-        "f02_multimodal_index",
+        "f03_multimodal_letter",
         cli_overrides=["image.target_long_edge=32"],
     )
     formatter = PromptFormatter(config)
@@ -235,7 +235,7 @@ def test_plain_eval_only_run_uses_eval_datasets_without_train_split(monkeypatch,
     output_root = tmp_path / "outputs"
     config = load_experiment_config(
         REPO_ROOT,
-        "f02_multimodal_index",
+        "f03_multimodal_letter",
         cli_overrides=["training.epochs=0", "lora.enabled=false", "runtime.predict_test=true"],
         output_dir=str(output_root),
     )

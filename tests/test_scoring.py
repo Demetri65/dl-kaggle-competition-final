@@ -29,7 +29,16 @@ def test_candidate_yes_no_aggregation_prefers_higher_normalized_yes_score() -> N
 
 def test_predict_many_restricted_reconstructs_batched_scores() -> None:
     scorer = object.__new__(FormulationScorer)
-    scorer.formatter = PromptFormatter(load_experiment_config(REPO_ROOT, "f02_multimodal_index"))
+    scorer.formatter = PromptFormatter(
+        load_experiment_config(
+            REPO_ROOT,
+            "f03_multimodal_letter",
+            cli_overrides=[
+                "formulation.mode=restricted_index_scoring",
+                "prompting.template=strict_index_output",
+            ],
+        )
+    )
     seen: dict[str, object] = {}
 
     def fake_score_completions(prompt_texts: list[str], completion_texts: list[str], images: list[object | None]) -> list[float]:

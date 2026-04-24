@@ -37,6 +37,8 @@ EVAL_RUNTIME_OVERRIDE_KEYS = (
 )
 EVAL_TRAINING_OVERRIDE_KEYS = (
     "eval_batch_size",
+    "bf16",
+    "fp16",
 )
 EVAL_SCORING_OVERRIDE_KEYS = (
     "max_completion_batch_size",
@@ -387,6 +389,10 @@ def resolve_effective_config(repo_root: Path, requested_config: ExperimentConfig
     for key in EVAL_TRAINING_OVERRIDE_KEYS:
         training_data[key] = requested_training[key]
     merged["training"] = training_data
+
+    fields_data = dict(requested_config.to_dict()["fields"])
+    fields_data["solution"] = False
+    merged["fields"] = fields_data
 
     scoring_data = dict(merged.get("scoring") or {})
     requested_scoring = requested_config.to_dict()["scoring"]

@@ -1,235 +1,32 @@
 # Stage 0 Formulations
 
-This project uses six Stage 0 formulations to compare how different answer-selection strategies behave before broader ablations.
+Stage 0 selected `f04_candidate_yes_no` as the primary formulation after full
+A100 LoRA training. `f03_multimodal_letter` remains active as a cleaner
+restricted-output comparator.
 
-These formulations are intentionally narrow and should match their names exactly. Their purpose is to establish strong parent recipes for later stages.
+## Active Configs
 
----
+| experiment_id | role | formulation | included fields | status |
+|---|---|---|---|---|
+| `f04_candidate_yes_no` | selected parent | candidate yes/no | image, question, candidate answer | promote to Stage 1 |
+| `f03_multimodal_letter` | comparator | restricted letter scoring | image, question, choices, hint, lecture | keep for reference |
 
-## f02_multimodal_index
+## Selected Parent
 
-**Type:** Restricted index scoring
+`f04_candidate_yes_no` asks the model to verify one candidate answer at a time
+with `Yes` or `No`. It outperformed the restricted-letter comparator on full
+validation:
 
-**Goal:** Predict the correct answer as its numeric index.
+| experiment_id | run type | val_accuracy |
+|---|---|---:|
+| `f04_candidate_yes_no` | full A100 LoRA train/eval | 0.693702 |
+| `f03_multimodal_letter` | full A100 LoRA train/eval | 0.646947 |
+| `f03_multimodal_letter` | artifact-backed eval sanity rerun | 0.645992 |
 
-**Inputs included:**
-- image
-- question
-- full choices list
-- hint
-- lecture
+## Notes
 
-**Inputs excluded by default:**
-- task
-- grade
-- subject
-- topic
-- category
-- skill
-
-**Target format:**
-- one valid numeric label only
-- examples:
-  - `0`
-  - `1`
-  - `2`
-
-**How prediction works:**
-- the model is prompted with the image and text context
-- scoring is restricted to the valid answer indices for that example
-- if the question has 3 choices, only `0`, `1`, and `2` are considered
-- the label with the highest score is selected
-
-**Why this formulation exists:**
-- it is the cleanest multiple-choice baseline
-- it keeps the output space small
-- it matches the structure of the task directly
-
----
-
-## f03_multimodal_letter
-
-**Type:** Restricted letter scoring
-
-**Goal:** Predict the correct answer as its letter label.
-
-**Inputs included:**
-- image
-- question
-- full choices list
-- hint
-- lecture
-
-**Inputs excluded by default:**
-- task
-- grade
-- subject
-- topic
-- category
-- skill
-
-**Target format:**
-- one valid letter label only
-- examples:
-  - `A`
-  - `B`
-  - `C`
-
-**How prediction works:**
-- the model is prompted with the image and text context
-- scoring is restricted to the valid letter labels for that example
-- if the question has 4 choices, only `A`, `B`, `C`, and `D` are considered
-- the label with the highest score is selected
-
-**Why this formulation exists:**
-- it tests whether letter labels work better than numeric labels for this model/tokenizer
-- it is otherwise structurally parallel to `f02`
-
----
-
-## f04_candidate_yes_no
-
-**Type:** Minimal candidate verification
-
-**Goal:** Evaluate one candidate answer at a time and decide whether it is correct.
-
-**Inputs included:**
-- image
-- question
-- single candidate answer
-
-**Inputs excluded:**
-- full choices list
-- hint
-- lecture
-- task
-- grade
-- subject
-- topic
-- category
-- skill
-
-**Target format:**
-- `Yes`
-- `No`
-
-**How prediction works:**
-- for each question, the system creates one prompt per candidate answer
-- each prompt asks whether that single candidate is correct
-- the model scores `Yes` and `No` for each candidate independently
-- the candidate with the strongest normalized yes-vs-no score is selected as the final prediction
-
-**Why this formulation exists:**
-- it isolates candidate verification behavior
-- it removes extra context so we can test whether the model can judge a candidate directly from the image and question alone
-
----
-
-## f05_candidate_yes_no_full_context
-
-**Type:** Rich candidate verification
-
-**Goal:** Evaluate one candidate answer at a time using the full available context.
-
-**Inputs included:**
-- image
-- question
-- full choices list
-- single candidate answer
-- hint
-- lecture
-- task
-- grade
-- subject
-- topic
-- category
-- skill
-
-**Inputs excluded:**
-- none of the standard Stage 0 context fields are intentionally excluded
-
-**Target format:**
-- `Yes`
-- `No`
-
-**How prediction works:**
-- for each question, the system creates one prompt per candidate answer
-- each prompt includes the candidate answer plus the full context for the item
-- the model scores `Yes` and `No` for each candidate independently
-- the candidate with the strongest normalized yes-vs-no score is selected as the final prediction
-
-**Why this formulation exists:**
-- it tests whether candidate verification improves when the model is given richer supporting context
-- it is the “maximum context” counterpart to `f04`
-
----
-
-## f06_multimodal_letter_meta_full
-
-**Type:** Restricted letter scoring with full metadata
-
-**Goal:** Predict the correct answer as its letter label while exposing the available metadata context.
-
-**Inputs included:**
-- image
-- question
-- full choices list
-- hint
-- lecture
-- task
-- grade
-- subject
-- topic
-- category
-- skill
-
-**Inputs excluded by default:**
-- solution
-
-**Target format:**
-- one valid letter label only
-- examples:
-  - `A`
-  - `B`
-  - `C`
-
-**How prediction works:**
-- the model is prompted with the image, choices, and richer metadata context
-- scoring is restricted to the valid letter labels for that example
-- if the question has 4 choices, only `A`, `B`, `C`, and `D` are considered
-- the label with the highest score is selected
-
-**Why this formulation exists:**
-- it isolates the effect of richer metadata while keeping the clean restricted-letter formulation from `f03`
-- it is a direct way to test whether metadata helps without switching to candidate verification
-
----
-
-# Summary of differences
-
-| Formulation | Output style | Full choices shown | Candidate shown | Hint | Lecture | Metadata |
-|---|---|---:|---:|---:|---:|---:|
-| `f02_multimodal_index` | index | yes | no | yes | yes | no |
-| `f03_multimodal_letter` | letter | yes | no | yes | yes | no |
-| `f04_candidate_yes_no` | yes/no | no | yes | no | no | no |
-| `f05_candidate_yes_no_full_context` | yes/no | yes | yes | yes | yes | yes |
-| `f06_multimodal_letter_meta_full` | letter | yes | no | yes | yes | yes |
-
----
-
-# Intended use in Stage 0
-
-Recommended Stage 0 use:
-
-- run `f02_multimodal_index` and `f03_multimodal_letter` as zero-shot comparisons on one T4 notebook
-- run `f04_candidate_yes_no` and `f05_candidate_yes_no_full_context` as zero-shot comparisons on another T4 notebook
-- train a simple LoRA baseline on `f02_multimodal_index` first
-- train `f06_multimodal_letter_meta_full` if you want to test richer metadata without changing away from restricted letter scoring
-- train `f05_candidate_yes_no_full_context` next only if candidate verification looks competitive
-
-This keeps the early experiment set focused while still testing meaningfully different formulations.
-
-Current smoke-train note (2026-04-23):
-- `f04_candidate_yes_no` was the strongest Stage 0 smoke-train result among the tested A100 baselines
-- `f03_multimodal_letter` remains the clean restricted-output comparator
-- `f06_multimodal_letter_meta_full` did not look strong enough to prioritize ahead of `f04` or `f03`
+- Use `f04_candidate_yes_no` as the Stage 1 parent.
+- Keep `f03_multimodal_letter` only as the restricted-output comparator.
+- `f04` is weak on 5-choice examples and underuses the final option, so later
+  stages should watch `accuracy_by_num_choices` and prediction distribution.
+- Archived Stage 0 configs live under `configs/archive/stage0_formulation/`.

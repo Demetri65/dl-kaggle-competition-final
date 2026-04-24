@@ -1,0 +1,4 @@
+experiment_id: x11_f04_candidate_choices
+parent_experiment_id: f04_candidate_yes_no
+fields:
+  choices: true

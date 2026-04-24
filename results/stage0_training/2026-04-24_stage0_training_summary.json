@@ -1,0 +1,63 @@
+[
+  {
+    "experiment_id": "f04_candidate_yes_no",
+    "run_mode": "train_eval",
+    "output_dir": "/content/drive/MyDrive/p2p_runs/notebook_c_a100/full_f04/f04_candidate_yes_no_seed42",
+    "run_summary_path": "/content/drive/MyDrive/p2p_runs/notebook_c_a100/full_f04/f04_candidate_yes_no_seed42/run_summary.yaml",
+    "val_predictions_path": "/content/drive/MyDrive/p2p_runs/notebook_c_a100/full_f04/f04_candidate_yes_no_seed42/artifacts/val_predictions.jsonl",
+    "val_metrics": {
+      "overall_accuracy": 0.6937022900763359,
+      "two_choice_accuracy": 0.7540983606557377,
+      "two_choice_support": 244,
+      "yes_no_true_false_accuracy": 0.6363636363636364,
+      "yes_no_true_false_support": 33,
+      "accuracy_by_num_choices": {
+        "2": 0.7540983606557377,
+        "3": 0.6535433070866141,
+        "4": 0.8134920634920635,
+        "5": 0.13636363636363635
+      },
+      "accuracy_by_task": {
+        "closed choice": 0.6955665024630542,
+        "true-or false": 0.6363636363636364
+      },
+      "accuracy_by_subject": {
+        "language science": 0.32142857142857145,
+        "natural science": 0.6576576576576577,
+        "social science": 0.8518518518518519
+      },
+      "prediction_distribution": {
+        "0": 0.3377862595419847,
+        "1": 0.3501908396946565,
+        "2": 0.23091603053435114,
+        "3": 0.07251908396946564,
+        "4": 0.008587786259541985
+      }
+    }
+  },
+  {
+    "experiment_id": "f03_multimodal_letter",
+    "run_mode": "train_eval",
+    "output_dir": "/content/drive/MyDrive/p2p_runs/notebook_c_a100/full_f03/f03_multimodal_letter_seed42",
+    "val_metrics": {
+      "overall_accuracy": 0.646947,
+      "two_choice_accuracy": 0.688525,
+      "two_choice_support": 244,
+      "yes_no_true_false_accuracy": 0.636364,
+      "yes_no_true_false_support": 33
+    }
+  },
+  {
+    "experiment_id": "f03_multimodal_letter",
+    "run_mode": "eval_only",
+    "eval_artifact_dir": "/content/drive/MyDrive/p2p_runs/notebook_c_a100/full_f03/f03_multimodal_letter_seed42",
+    "output_dir": "/content/drive/MyDrive/p2p_runs/notebook_c_a100/re_eval_f03_b16_full/f03_multimodal_letter_seed42",
+    "val_metrics": {
+      "overall_accuracy": 0.645992,
+      "two_choice_accuracy": 0.67623,
+      "two_choice_support": 244,
+      "yes_no_true_false_accuracy": 0.606061,
+      "yes_no_true_false_support": 33
+    }
+  }
+]

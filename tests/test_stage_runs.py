@@ -11,7 +11,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_build_stage_row_includes_metadata_paths() -> None:
-    config = load_experiment_config(REPO_ROOT, "f02_multimodal_index")
+    config = load_experiment_config(REPO_ROOT, "f03_multimodal_letter")
     row = build_stage_row(
         config,
         {
@@ -31,7 +31,7 @@ def test_build_stage_row_includes_metadata_paths() -> None:
 
 def test_run_stage_auto_writes_summary_when_stage_name_is_omitted(monkeypatch, tmp_path: Path) -> None:
     output_root = tmp_path / "outputs"
-    config = load_experiment_config(REPO_ROOT, "f02_multimodal_index", output_dir=str(output_root))
+    config = load_experiment_config(REPO_ROOT, "f03_multimodal_letter", output_dir=str(output_root))
 
     monkeypatch.setattr(
         "scripts.run_stage.load_experiment_config",
@@ -51,7 +51,7 @@ def test_run_stage_auto_writes_summary_when_stage_name_is_omitted(monkeypatch, t
     monkeypatch.setattr(
         sys,
         "argv",
-        ["run_stage.py", "f02_multimodal_index", "--output-dir", str(output_root)],
+        ["run_stage.py", "f03_multimodal_letter", "--output-dir", str(output_root)],
     )
 
     run_stage_main()

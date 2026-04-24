@@ -19,7 +19,16 @@ RECORD = {
 
 
 def test_index_formulation_switches_target_and_labels() -> None:
-    formatter = PromptFormatter(load_experiment_config(REPO_ROOT, "f02_multimodal_index"))
+    formatter = PromptFormatter(
+        load_experiment_config(
+            REPO_ROOT,
+            "f03_multimodal_letter",
+            cli_overrides=[
+                "formulation.mode=restricted_index_scoring",
+                "prompting.template=strict_index_output",
+            ],
+        )
+    )
     assert formatter.valid_labels(4) == ["0", "1", "2", "3"]
     assert formatter.render_target_text(RECORD) == " 2"
 
@@ -36,4 +45,3 @@ def test_candidate_yes_no_formulation_uses_candidate_specific_targets() -> None:
     assert "Candidate answer:" in yes_prompt
     assert formatter.render_target_text(RECORD, candidate_index=2) == " Yes"
     assert formatter.render_target_text(RECORD, candidate_index=1) == " No"
-

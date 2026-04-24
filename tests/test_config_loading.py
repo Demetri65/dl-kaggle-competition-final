@@ -21,11 +21,6 @@ def test_experiment_override_loads_from_base() -> None:
 
 def test_stage0_formulations_resolve_to_intended_modes_templates_and_fields() -> None:
     expectations = {
-        "f02_multimodal_index": {
-            "mode": "restricted_index_scoring",
-            "template": "strict_index_output",
-            "fields": ["image", "question", "choices", "hint", "lecture"],
-        },
         "f03_multimodal_letter": {
             "mode": "restricted_letter_scoring",
             "template": "strict_letter_output",
@@ -36,39 +31,15 @@ def test_stage0_formulations_resolve_to_intended_modes_templates_and_fields() ->
             "template": "candidate_yes_no",
             "fields": ["image", "question"],
         },
-        "f05_candidate_yes_no_full_context": {
+        "x11_f04_candidate_choices": {
             "mode": "candidate_yes_no",
             "template": "candidate_yes_no",
-            "fields": [
-                "image",
-                "question",
-                "choices",
-                "hint",
-                "lecture",
-                "task",
-                "grade",
-                "subject",
-                "topic",
-                "category",
-                "skill",
-            ],
+            "fields": ["image", "question", "choices"],
         },
-        "f06_multimodal_letter_meta_full": {
-            "mode": "restricted_letter_scoring",
-            "template": "strict_letter_output",
-            "fields": [
-                "image",
-                "question",
-                "choices",
-                "hint",
-                "lecture",
-                "task",
-                "grade",
-                "subject",
-                "topic",
-                "category",
-                "skill",
-            ],
+        "x12_f04_candidate_hint": {
+            "mode": "candidate_yes_no",
+            "template": "candidate_yes_no",
+            "fields": ["image", "question", "hint"],
         },
     }
 
@@ -82,7 +53,7 @@ def test_stage0_formulations_resolve_to_intended_modes_templates_and_fields() ->
 def test_cli_overrides_take_precedence() -> None:
     config = load_experiment_config(
         REPO_ROOT,
-        "f02_multimodal_index",
+        "f03_multimodal_letter",
         cli_overrides=[
             "training.learning_rate=0.0001",
             "fields.solution=true",
@@ -101,7 +72,7 @@ def test_cli_overrides_take_precedence() -> None:
 def test_cli_overrides_coerce_scientific_notation_strings_for_float_fields() -> None:
     config = load_experiment_config(
         REPO_ROOT,
-        "f06_multimodal_letter_meta_full",
+        "f04_candidate_yes_no",
         cli_overrides=["training.learning_rate=5e-5", "lora.dropout=1e-1"],
     )
     assert config.training.learning_rate == pytest.approx(5e-5)
@@ -112,7 +83,7 @@ def test_invalid_template_formulation_combo_fails() -> None:
     with pytest.raises(ValueError):
         load_experiment_config(
             REPO_ROOT,
-            "f02_multimodal_index",
+            "f03_multimodal_letter",
             cli_overrides=["prompting.template=candidate_yes_no"],
         )
 
@@ -121,7 +92,7 @@ def test_eval_only_config_requires_zero_epochs_when_lora_disabled() -> None:
     with pytest.raises(ValueError):
         load_experiment_config(
             REPO_ROOT,
-            "f02_multimodal_index",
+            "f03_multimodal_letter",
             cli_overrides=["lora.enabled=false", "training.epochs=1"],
         )
 
@@ -130,7 +101,7 @@ def test_eval_artifact_dir_requires_eval_only_mode() -> None:
     with pytest.raises(ValueError):
         load_experiment_config(
             REPO_ROOT,
-            "f02_multimodal_index",
+            "f03_multimodal_letter",
             cli_overrides=["runtime.eval_artifact_dir=outputs/source_run"],
         )
 
@@ -139,7 +110,7 @@ def test_eval_artifact_dir_rejects_final_retrain() -> None:
     with pytest.raises(ValueError):
         load_experiment_config(
             REPO_ROOT,
-            "f02_multimodal_index",
+            "f03_multimodal_letter",
             cli_overrides=[
                 "training.epochs=0",
                 "runtime.eval_artifact_dir=outputs/source_run",
@@ -277,7 +248,7 @@ def test_experiment_can_merge_multiple_parent_configs(tmp_path: Path) -> None:
     assert config.training.learning_rate == pytest.approx(0.0004)
 
 
-def test_eval_artifact_config_uses_saved_resolved_config_with_runtime_overrides(tmp_path: Path) -> None:
+def test_eval_artifact_config_uses_saved_resolved_config_with_runtime_field_and_precision_overrides(tmp_path: Path) -> None:
     artifact_dir = tmp_path / "outputs" / "source_run"
     artifact_dir.mkdir(parents=True)
     (artifact_dir / "resolved_config.yaml").write_text(
@@ -285,9 +256,9 @@ def test_eval_artifact_config_uses_saved_resolved_config_with_runtime_overrides(
             {
                 "experiment_id": "source_run",
                 "model": {"model_id": "saved-model"},
-                "formulation": {"mode": "restricted_letter_scoring"},
-                "prompting": {"template": "strict_letter_output"},
-                "fields": {"lecture": False, "hint": False},
+                "formulation": {"mode": "candidate_yes_no"},
+                "prompting": {"template": "candidate_yes_no"},
+                "fields": {"image": True, "question": True, "choices": False, "hint": False, "solution": True},
                 "image": {"resize_mode": "aspect_pad", "target_long_edge": 512},
                 "lora": {"enabled": True, "rank": 16, "alpha": 32, "target_preset": "attn"},
                 "training": {
@@ -322,10 +293,12 @@ def test_eval_artifact_config_uses_saved_resolved_config_with_runtime_overrides(
 
     requested = load_experiment_config(
         REPO_ROOT,
-        "f02_multimodal_index",
+        "x11_f04_candidate_choices",
         cli_overrides=[
             "training.epochs=0",
             "training.eval_batch_size=24",
+            "training.bf16=false",
+            "training.fp16=true",
             "scoring.max_completion_batch_size=48",
             f"runtime.eval_artifact_dir={artifact_dir.relative_to(tmp_path)}",
             "runtime.predict_test=true",
@@ -340,13 +313,18 @@ def test_eval_artifact_config_uses_saved_resolved_config_with_runtime_overrides(
 
     effective = resolve_effective_config(tmp_path, requested)
     assert effective.experiment_id == requested.experiment_id
-    assert effective.formulation.mode == "restricted_letter_scoring"
-    assert effective.prompting.template == "strict_letter_output"
+    assert effective.formulation.mode == "candidate_yes_no"
+    assert effective.prompting.template == "candidate_yes_no"
     assert effective.image.resize_mode == "aspect_pad"
     assert effective.training.learning_rate == pytest.approx(0.0002)
     assert effective.training.epochs == 0
     assert effective.training.eval_batch_size == 24
+    assert effective.training.bf16 is False
+    assert effective.training.fp16 is True
     assert effective.scoring.max_completion_batch_size == 48
+    assert effective.fields.choices is True
+    assert effective.fields.hint is False
+    assert effective.fields.solution is False
     assert effective.runtime.output_root == "custom_outputs"
     assert effective.runtime.seed == 99
     assert effective.runtime.predict_test is True
@@ -355,3 +333,13 @@ def test_eval_artifact_config_uses_saved_resolved_config_with_runtime_overrides(
     assert effective.runtime.max_val_examples == 5
     assert effective.runtime.max_test_examples == 7
     assert effective.runtime.eval_artifact_dir == str(artifact_dir.relative_to(tmp_path))
+
+
+def test_archived_stage0_configs_are_not_active() -> None:
+    for experiment_id in (
+        "f02_multimodal_index",
+        "f05_candidate_yes_no_full_context",
+        "f06_multimodal_letter_meta_full",
+    ):
+        with pytest.raises(FileNotFoundError):
+            load_experiment_config(REPO_ROOT, experiment_id)

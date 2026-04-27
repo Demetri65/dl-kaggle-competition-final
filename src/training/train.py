@@ -151,13 +151,15 @@ def _build_training_datasets(
 def _build_eval_datasets(
     config: ExperimentConfig,
     formatter: PromptFormatter,
-) -> tuple[ScienceQADataset, ScienceQADataset | None]:
-    val_dataset = _build_dataset(
-        config,
-        formatter,
-        split="val",
-        limit=config.runtime.max_val_examples,
-    )
+) -> tuple[ScienceQADataset | None, ScienceQADataset | None]:
+    val_dataset = None
+    if config.runtime.max_val_examples != 0:
+        val_dataset = _build_dataset(
+            config,
+            formatter,
+            split="val",
+            limit=config.runtime.max_val_examples,
+        )
     test_dataset = None
     if config.runtime.predict_test:
         test_dataset = _build_dataset(
@@ -317,16 +319,21 @@ def _build_scorer(
 
 
 def _write_run_metadata(output_dir: Path, config: ExperimentConfig, summary: dict[str, Any]) -> dict[str, str]:
-    resolved_config_path = output_dir / "resolved_config.yaml"
+    resolved_config_path = _write_resolved_config(output_dir, config)
     metadata_paths = {
         "resolved_config_path": str(resolved_config_path),
         "run_summary_path": str(output_dir / "run_summary.yaml"),
     }
-    with resolved_config_path.open("w") as handle:
-        yaml.safe_dump(config.to_dict(), handle, sort_keys=False)
     with Path(metadata_paths["run_summary_path"]).open("w") as handle:
         yaml.safe_dump({**summary, **metadata_paths}, handle, sort_keys=False)
     return metadata_paths
+
+
+def _write_resolved_config(output_dir: Path, config: ExperimentConfig) -> Path:
+    resolved_config_path = output_dir / "resolved_config.yaml"
+    with resolved_config_path.open("w") as handle:
+        yaml.safe_dump(config.to_dict(), handle, sort_keys=False)
+    return resolved_config_path
 
 
 def run_experiment(repo_root: Path, config: ExperimentConfig) -> dict[str, Any]:
@@ -336,6 +343,7 @@ def run_experiment(repo_root: Path, config: ExperimentConfig) -> dict[str, Any]:
     output_dir = config.output_dir
     ensure_directory(output_dir)
     (output_dir / "artifacts").mkdir(parents=True, exist_ok=True)
+    _write_resolved_config(output_dir, config)
     train_dataset = None
 
     if config.runtime.eval_artifact_dir:

@@ -173,6 +173,44 @@ def test_eval_only_dataset_builder_skips_train_split(monkeypatch) -> None:
     assert len(test_dataset) == 1
 
 
+def test_eval_only_dataset_builder_can_skip_val_split(monkeypatch) -> None:
+    config = load_experiment_config(
+        REPO_ROOT,
+        "f03_multimodal_letter",
+        cli_overrides=[
+            "training.epochs=0",
+            "runtime.predict_test=true",
+            "runtime.max_val_examples=0",
+        ],
+    )
+    formatter = PromptFormatter(config)
+    seen_splits: list[str] = []
+
+    def fake_load_split_examples(data_dir: Path, split: str, limit: int | None = None) -> list[ScienceQAExample]:
+        seen_splits.append(split)
+        if split != "test":
+            raise AssertionError("test-only eval should not load train or val splits")
+        return [
+            ScienceQAExample(
+                id="test_001",
+                image_path=None,
+                question="Which answer is correct?",
+                choices=["A", "B"],
+                num_choices=2,
+                answer=None,
+            )
+        ]
+
+    monkeypatch.setattr(train_module, "load_split_examples", fake_load_split_examples)
+
+    val_dataset, test_dataset = train_module._build_eval_datasets(config, formatter)
+
+    assert seen_splits == ["test"]
+    assert val_dataset is None
+    assert test_dataset is not None
+    assert len(test_dataset) == 1
+
+
 def test_candidate_yes_no_eval_dataset_keeps_one_item_per_example() -> None:
     config = load_experiment_config(
         REPO_ROOT,

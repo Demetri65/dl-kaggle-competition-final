@@ -1,0 +1,147 @@
+[
+  {
+    "experiment_id": "c03_balanced_answer",
+    "parent_experiment_id": "f04_candidate_yes_no",
+    "run_type": "corrected_full_train_eval",
+    "formulation": "candidate_yes_no",
+    "sampling_mode": "balanced_answer_index",
+    "trainable_parameters": 4456448,
+    "output_dir": "/content/drive/MyDrive/p2p_runs/stage3_balanced_answer_index_a100/full/c03_balanced_answer_seed42",
+    "val_metrics": {
+      "overall_accuracy": 0.6946564885496184,
+      "two_choice_accuracy": 0.7377049180327869,
+      "two_choice_support": 244,
+      "yes_no_true_false_accuracy": 0.6060606060606061,
+      "yes_no_true_false_support": 33,
+      "accuracy_by_num_choices": {
+        "2": 0.7377049180327869,
+        "3": 0.6279527559055118,
+        "4": 0.8293650793650794,
+        "5": 0.45454545454545453
+      },
+      "accuracy_by_task": {
+        "closed choice": 0.6975369458128079,
+        "true-or false": 0.6060606060606061
+      },
+      "accuracy_by_subject": {
+        "language science": 0.32142857142857145,
+        "natural science": 0.6563706563706564,
+        "social science": 0.8600823045267489
+      },
+      "prediction_distribution": {
+        "0": 0.34541984732824427,
+        "1": 0.3416030534351145,
+        "2": 0.23091603053435114,
+        "3": 0.07919847328244274,
+        "4": 0.0028625954198473282
+      }
+    },
+    "decision": "selected_final_single_model_config"
+  },
+  {
+    "experiment_id": "c04_task_choice_stratified",
+    "parent_experiment_id": "f04_candidate_yes_no",
+    "run_type": "corrected_full_train_eval",
+    "formulation": "candidate_yes_no",
+    "sampling_mode": "stratified_num_choices_task",
+    "trainable_parameters": 4456448,
+    "output_dir": "/content/drive/MyDrive/p2p_runs/stage3_stratified_num_choices_task_a100/full/c04_task_choice_stratified_seed42",
+    "val_metrics": {
+      "overall_accuracy": 0.6812977099236641,
+      "two_choice_accuracy": 0.8114754098360656,
+      "two_choice_support": 244,
+      "yes_no_true_false_accuracy": 0.6363636363636364,
+      "yes_no_true_false_support": 33,
+      "accuracy_by_num_choices": {
+        "2": 0.8114754098360656,
+        "3": 0.5984251968503937,
+        "4": 0.7857142857142857,
+        "5": 0.3181818181818182
+      },
+      "accuracy_by_task": {
+        "closed choice": 0.6827586206896552,
+        "true-or false": 0.6363636363636364
+      },
+      "accuracy_by_subject": {
+        "language science": 0.2857142857142857,
+        "natural science": 0.6512226512226512,
+        "social science": 0.823045267489712
+      },
+      "prediction_distribution": {
+        "0": 0.3320610687022901,
+        "1": 0.35782442748091603,
+        "2": 0.2299618320610687,
+        "3": 0.07251908396946564,
+        "4": 0.007633587786259542
+      }
+    },
+    "decision": "not_selected"
+  },
+  {
+    "experiment_id": "f04_candidate_yes_no",
+    "run_type": "stage0_baseline_full_train_eval",
+    "formulation": "candidate_yes_no",
+    "sampling_mode": "uniform",
+    "trainable_parameters": 4456448,
+    "output_dir": "/content/drive/MyDrive/p2p_runs/notebook_c_a100/full_f04/f04_candidate_yes_no_seed42",
+    "val_metrics": {
+      "overall_accuracy": 0.6937022900763359,
+      "two_choice_accuracy": 0.7540983606557377,
+      "two_choice_support": 244,
+      "yes_no_true_false_accuracy": 0.6363636363636364,
+      "yes_no_true_false_support": 33,
+      "accuracy_by_num_choices": {
+        "2": 0.7540983606557377,
+        "3": 0.6535433070866141,
+        "4": 0.8134920634920635,
+        "5": 0.13636363636363635
+      },
+      "accuracy_by_task": {
+        "closed choice": 0.6955665024630542,
+        "true-or false": 0.6363636363636364
+      },
+      "accuracy_by_subject": {
+        "language science": 0.32142857142857145,
+        "natural science": 0.6576576576576577,
+        "social science": 0.8518518518518519
+      },
+      "prediction_distribution": {
+        "0": 0.3377862595419847,
+        "1": 0.3501908396946565,
+        "2": 0.23091603053435114,
+        "3": 0.07251908396946564,
+        "4": 0.008587786259541985
+      }
+    },
+    "decision": "baseline_not_final"
+  },
+  {
+    "experiment_id": "c03_balanced_answer",
+    "run_type": "final_train_val_public_leaderboard",
+    "formulation": "candidate_yes_no",
+    "sampling_mode": "balanced_answer_index",
+    "trainable_parameters": 4456448,
+    "train_split": "train+val",
+    "prediction_split": "test",
+    "public_leaderboard_accuracy": 0.71,
+    "public_leaderboard_accuracy_precision": "approximate_user_reported",
+    "comparison_note": "Score is consistent with validation; reported leading public leaderboard scores around 0.88 suggest a strategy/context gap rather than submission failure.",
+    "recommended_next_ablation": {
+      "formulation": "candidate_yes_no",
+      "sampling_mode": "balanced_answer_index",
+      "lora_rank": 16,
+      "fields_to_try": [
+        "choices",
+        "hint",
+        "lecture",
+        "subject",
+        "topic",
+        "category",
+        "skill"
+      ],
+      "excluded_fields": [
+        "solution"
+      ]
+    }
+  }
+]

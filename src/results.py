@@ -65,6 +65,7 @@ def build_results_row(
                 "rank": config.lora.rank,
                 "alpha": config.lora.alpha,
                 "dropout": config.lora.dropout,
+                "use_dora": config.lora.use_dora,
                 "target_preset": config.lora.target_preset,
                 "target_modules": config.lora.target_modules,
             }
@@ -85,6 +86,12 @@ def build_results_row(
                 "bf16": config.training.bf16,
                 "fp16": config.training.fp16,
                 "gradient_checkpointing": config.training.gradient_checkpointing,
+                "checkpointing": {
+                    "enabled": config.training.checkpointing.enabled,
+                    "save_steps": config.training.checkpointing.save_steps,
+                    "save_epochs": config.training.checkpointing.save_epochs,
+                    "max_to_keep": config.training.checkpointing.max_to_keep,
+                },
             }
         ),
         "scoring_settings": json_dumps(
@@ -107,6 +114,8 @@ def build_results_row(
         "resolved_config_path": summary.get("resolved_config_path"),
         "run_summary_path": summary.get("run_summary_path"),
         "eval_artifact_dir": summary.get("eval_artifact_dir"),
+        "resume_from_checkpoint": summary.get("resume_from_checkpoint"),
+        "latest_checkpoint_dir": summary.get("latest_checkpoint_dir"),
         "output_dir": str(config.output_dir),
     }
 

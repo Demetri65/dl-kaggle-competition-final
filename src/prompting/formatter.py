@@ -66,6 +66,10 @@ class PromptFormatter:
         if self.config.fields.image:
             sections.append("<image>")
 
+        image_caption = self._clean_text(record.get("image_caption"))
+        if self.config.fields.image_caption and image_caption:
+            sections.append(self._format_section("Image description", image_caption))
+
         question = self._clean_text(record.get("question"))
         if self.config.fields.question and question:
             sections.append(self._format_section("Question", question))
@@ -132,7 +136,7 @@ class PromptFormatter:
         elif self.formulation_mode != "candidate_yes_no":
             instruction += f" Valid outputs are: {', '.join(valid_labels)}."
 
-        return f"{instruction}\nAnswer:"
+        return f"{instruction}\n{self.config.prompting.answer_prefix}"
 
     def _format_section(self, label: str, value: str) -> str:
         if self.template.compact:

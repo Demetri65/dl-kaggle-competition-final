@@ -8,6 +8,7 @@ formulation:
   mode: restricted_index_scoring
 fields:
   image: true
+  image_caption: false
   question: true
   choices: true
   hint: true
@@ -22,16 +23,30 @@ fields:
 image:
   resize_mode: stretch
   target_long_edge: 384
+  augmentation:
+    enabled: false
+    random_resized_crop_scale: [0.9, 1.0]
+    rotation_degrees: 3.0
+    brightness_range: [0.9, 1.1]
 prompting:
   template: strict_index_output
+  answer_prefix: "Answer:"
 lora:
   enabled: true
   rank: 8
   alpha: 16
   dropout: 0.05
+  use_dora: false
   target_preset: attn
   target_modules: []
   trainable_parameter_cap: 5000000
+captioning:
+  enabled: false
+  cache_dir: data/cache/image_captions
+  prompt: "Describe the image in one concise sentence, focusing on text, labels, axes, objects, and relationships relevant to answering a science question."
+  max_new_tokens: 48
+  batch_size: 1
+  force_refresh: false
 training:
   epochs: 1
   learning_rate: 5.0e-5
@@ -43,6 +58,11 @@ training:
   bf16: true
   fp16: false
   gradient_checkpointing: true
+  checkpointing:
+    enabled: false
+    save_steps: 0
+    save_epochs: true
+    max_to_keep: 3
   max_new_tokens: 8
 scoring:
   max_completion_batch_size: 8

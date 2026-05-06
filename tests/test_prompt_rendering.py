@@ -144,3 +144,27 @@ def test_x12_f04_candidate_hint_prompt_adds_hint_for_eval_screen() -> None:
     assert "Skill:" not in prompt
     assert "Is the candidate answer correct? Reply with Yes or No only." in prompt
     assert "Valid outputs" not in prompt
+
+
+def test_ta01_prompt_adds_caption_context_and_verdict_prefix() -> None:
+    formatter = PromptFormatter(load_experiment_config(REPO_ROOT, "ta01_dora_caption_context_512_aug"))
+    record = {**SAMPLE_RECORD, "image_caption": "A labeled water cycle diagram with clouds and arrows."}
+
+    prompt = formatter.render_prompt(record, split="val", candidate_index=1)
+
+    assert "<image>" in prompt
+    assert "Image description:" in prompt
+    assert "A labeled water cycle diagram" in prompt
+    assert "Question:" in prompt
+    assert "Choices:" in prompt
+    assert "0. Evaporation" in prompt
+    assert "Hint:" in prompt
+    assert "Lecture:" in prompt
+    assert "Grade:" in prompt
+    assert "Subject:" in prompt
+    assert "Topic:" in prompt
+    assert "Candidate answer:" in prompt
+    assert "Condensation" in prompt
+    assert "Solution:" not in prompt
+    assert "Is the candidate answer correct? Reply with Yes or No only." in prompt
+    assert prompt.endswith("Verdict:")

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import json
 from pathlib import Path
 
 from src.config import load_experiment_config
@@ -55,3 +56,19 @@ def test_build_results_row_includes_metadata_paths() -> None:
     assert row["resolved_config_path"].endswith("resolved_config.yaml")
     assert row["run_summary_path"].endswith("run_summary.yaml")
     assert row["eval_artifact_dir"] == "outputs/source_run"
+
+
+def test_results_row_logs_dora_setting() -> None:
+    config = load_experiment_config(REPO_ROOT, "ta01_dora_caption_context_512_aug")
+    row = build_results_row(
+        REPO_ROOT,
+        config,
+        {
+            "trainable_parameters": 123,
+            "matched_lora_modules": [],
+            "unmatched_lora_targets": [],
+            "val_metrics": {},
+        },
+    )
+
+    assert json.loads(row["lora_settings"])["use_dora"] is True

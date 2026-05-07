@@ -76,6 +76,48 @@ def test_stage3_sampling_configs_use_selected_f04_parent() -> None:
         assert config.sampling.mode == sampling_mode
 
 
+def test_stage5_ta_final_config_resolves_expected_settings() -> None:
+    config = load_experiment_config(REPO_ROOT, "ta01_dora_caption_context_512_aug")
+
+    assert config.parent_experiment_id == "c03_balanced_answer"
+    assert config.formulation.mode == "candidate_yes_no"
+    assert config.prompting.template == "candidate_yes_no"
+    assert config.prompting.answer_prefix == "Verdict:"
+    assert config.sampling.mode == "balanced_answer_index"
+    assert config.lora.rank == 16
+    assert config.lora.alpha == 32
+    assert config.lora.use_dora is True
+    assert config.lora.target_preset == "attn"
+    assert config.captioning.enabled is True
+    assert config.fields.solution is False
+    assert config.image.resize_mode == "aspect_pad"
+    assert config.image.target_long_edge == 512
+    assert config.image.augmentation.enabled is True
+    assert selected_fields(config) == [
+        "image",
+        "image_caption",
+        "question",
+        "choices",
+        "hint",
+        "lecture",
+        "grade",
+        "subject",
+        "topic",
+    ]
+
+
+def test_stage5_mlp_capcheck_config_uses_rank16_dora_qv_mlp_targets() -> None:
+    config = load_experiment_config(REPO_ROOT, "ta02_rank16_dora_qv_mlp_capcheck")
+
+    assert config.parent_experiment_id == "c03_balanced_answer"
+    assert config.formulation.mode == "candidate_yes_no"
+    assert config.sampling.mode == "balanced_answer_index"
+    assert config.lora.rank == 16
+    assert config.lora.alpha == 32
+    assert config.lora.use_dora is True
+    assert config.lora.target_preset == "qv_mlp"
+
+
 def test_cli_overrides_take_precedence() -> None:
     config = load_experiment_config(
         REPO_ROOT,
@@ -141,6 +183,28 @@ def test_eval_artifact_dir_rejects_final_retrain() -> None:
                 "training.epochs=0",
                 "runtime.eval_artifact_dir=outputs/source_run",
                 "runtime.final_retrain=true",
+            ],
+        )
+
+
+def test_resume_from_checkpoint_requires_training_and_rejects_eval_artifact() -> None:
+    with pytest.raises(ValueError):
+        load_experiment_config(
+            REPO_ROOT,
+            "f03_multimodal_letter",
+            cli_overrides=[
+                "training.epochs=0",
+                "runtime.resume_from_checkpoint=outputs/run/checkpoints/epoch_001",
+            ],
+        )
+    with pytest.raises(ValueError):
+        load_experiment_config(
+            REPO_ROOT,
+            "f03_multimodal_letter",
+            cli_overrides=[
+                "training.epochs=0",
+                "runtime.eval_artifact_dir=outputs/source_run",
+                "runtime.resume_from_checkpoint=outputs/run/checkpoints/epoch_001",
             ],
         )
 

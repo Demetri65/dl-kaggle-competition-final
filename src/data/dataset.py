@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterable
 
@@ -27,6 +27,7 @@ class ScienceQAExample:
     question: str
     choices: list[str]
     num_choices: int
+    image_caption: str | None = None
     answer: int | None = None
     hint: str | None = None
     lecture: str | None = None
@@ -42,6 +43,7 @@ class ScienceQAExample:
         return {
             "id": self.id,
             "image_path": self.image_path,
+            "image_caption": self.image_caption,
             "question": self.question,
             "choices": self.choices,
             "num_choices": self.num_choices,
@@ -85,6 +87,7 @@ def _row_to_example(row: pd.Series) -> ScienceQAExample:
     return ScienceQAExample(
         id=str(row["id"]),
         image_path=_normalize_optional_text(row.get("image_path")),
+        image_caption=_normalize_optional_text(row.get("image_caption")),
         question=str(row["question"]).strip(),
         choices=choices,
         num_choices=num_choices,
@@ -116,6 +119,59 @@ def load_split_dataframe(data_dir: Path, split: str, limit: int | None = None) -
 def load_split_examples(data_dir: Path, split: str, limit: int | None = None) -> list[ScienceQAExample]:
     dataframe = load_split_dataframe(data_dir, split, limit=limit)
     return [_row_to_example(row) for _, row in dataframe.iterrows()]
+
+
+def _caption_cache_path(cache_dir: str, split: str) -> Path:
+    return Path(cache_dir) / f"{split}.jsonl"
+
+
+def load_caption_cache(cache_dir: str, split: str) -> dict[str, str]:
+    cache_path = _caption_cache_path(cache_dir, split)
+    if not cache_path.exists():
+        raise FileNotFoundError(
+            f"Missing image caption cache for split {split!r}: {cache_path}. "
+            "Run scripts/generate_image_captions.py before enabling fields.image_caption."
+        )
+    captions: dict[str, str] = {}
+    with cache_path.open() as handle:
+        for line_number, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            example_id = str(row.get("id", "")).strip()
+            caption = _normalize_optional_text(row.get("image_caption"))
+            if example_id and caption:
+                captions[example_id] = caption
+            elif example_id:
+                captions[example_id] = ""
+            else:
+                raise ValueError(f"Caption cache row {line_number} in {cache_path} is missing id.")
+    return captions
+
+
+def attach_image_captions(
+    examples: list[ScienceQAExample],
+    config: ExperimentConfig,
+    split: str,
+) -> list[ScienceQAExample]:
+    if not (config.captioning.enabled and config.fields.image_caption):
+        return examples
+    captions = load_caption_cache(config.captioning.cache_dir, split)
+    missing_ids = [
+        example.id
+        for example in examples
+        if example.image_path and example.id not in captions
+    ]
+    if missing_ids:
+        preview = ", ".join(missing_ids[:5])
+        raise FileNotFoundError(
+            f"Caption cache for split {split!r} is missing {len(missing_ids)} image captions "
+            f"(examples: {preview}). Run scripts/generate_image_captions.py for this split."
+        )
+    return [
+        replace(example, image_caption=captions.get(example.id) or None)
+        for example in examples
+    ]
 
 
 def combine_examples(*example_lists: Iterable[ScienceQAExample]) -> list[ScienceQAExample]:

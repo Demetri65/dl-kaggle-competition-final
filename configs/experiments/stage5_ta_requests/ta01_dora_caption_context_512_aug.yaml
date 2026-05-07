@@ -1,0 +1,30 @@
+experiment_id: ta01_dora_caption_context_512_aug
+parent_experiment_id: c03_balanced_answer
+fields:
+  image_caption: true
+  choices: true
+  hint: true
+  lecture: true
+  grade: true
+  subject: true
+  topic: true
+image:
+  resize_mode: aspect_pad
+  target_long_edge: 512
+  augmentation:
+    enabled: true
+    random_resized_crop_scale: [0.92, 1.0]
+    rotation_degrees: 2.0
+    brightness_range: [0.95, 1.05]
+prompting:
+  answer_prefix: "Verdict:"
+lora:
+  rank: 16
+  alpha: 32
+  use_dora: true
+  target_preset: attn
+captioning:
+  enabled: true
+  cache_dir: data/cache/image_captions
+  max_new_tokens: 48
+  batch_size: 1

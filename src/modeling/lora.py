@@ -10,6 +10,8 @@ from src.config import LoraConfigSpec
 
 LORA_TARGET_PRESETS = {
     "attn": ["q_proj", "k_proj", "v_proj", "o_proj", "out_proj"],
+    "mlp": ["gate_proj", "up_proj", "down_proj"],
+    "qv_mlp": ["q_proj", "v_proj", "gate_proj", "up_proj", "down_proj"],
     "attn_connector": [
         "q_proj",
         "k_proj",
@@ -98,6 +100,7 @@ def apply_lora(model: Any, config: LoraConfigSpec, will_train: bool) -> LoraAppl
         r=config.rank,
         lora_alpha=config.alpha,
         lora_dropout=config.dropout,
+        use_dora=config.use_dora,
         bias="none",
         target_modules=resolve_target_modules(config),
         task_type=TaskType.CAUSAL_LM,

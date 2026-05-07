@@ -64,6 +64,7 @@ class FormulationConfig:
 @dataclass
 class FieldConfig:
     image: bool = True
+    image_caption: bool = False
     question: bool = True
     choices: bool = True
     hint: bool = True
@@ -78,14 +79,24 @@ class FieldConfig:
 
 
 @dataclass
+class ImageAugmentationConfig:
+    enabled: bool = False
+    random_resized_crop_scale: list[float] = field(default_factory=lambda: [0.9, 1.0])
+    rotation_degrees: float = 3.0
+    brightness_range: list[float] = field(default_factory=lambda: [0.9, 1.1])
+
+
+@dataclass
 class ImageConfig:
     resize_mode: str = "stretch"
     target_long_edge: int = 384
+    augmentation: ImageAugmentationConfig = field(default_factory=ImageAugmentationConfig)
 
 
 @dataclass
 class PromptingConfig:
     template: str = "strict_index_output"
+    answer_prefix: str = "Answer:"
 
 
 @dataclass
@@ -94,9 +105,28 @@ class LoraConfigSpec:
     rank: int = 8
     alpha: int = 16
     dropout: float = 0.05
+    use_dora: bool = False
     target_preset: str = "attn"
     target_modules: list[str] = field(default_factory=list)
     trainable_parameter_cap: int = 5_000_000
+
+
+@dataclass
+class CaptioningConfig:
+    enabled: bool = False
+    cache_dir: str = "data/cache/image_captions"
+    prompt: str = "Describe the image in one concise sentence, focusing on text, labels, axes, objects, and relationships relevant to answering a science question."
+    max_new_tokens: int = 48
+    batch_size: int = 1
+    force_refresh: bool = False
+
+
+@dataclass
+class TrainingCheckpointConfig:
+    enabled: bool = False
+    save_steps: int = 0
+    save_epochs: bool = True
+    max_to_keep: int = 3
 
 
 @dataclass
@@ -111,6 +141,7 @@ class TrainingConfig:
     bf16: bool = True
     fp16: bool = False
     gradient_checkpointing: bool = True
+    checkpointing: TrainingCheckpointConfig = field(default_factory=TrainingCheckpointConfig)
     max_new_tokens: int = 8
 
 
@@ -139,6 +170,7 @@ class RuntimeConfig:
     predict_test: bool = False
     final_retrain: bool = False
     eval_artifact_dir: str | None = None
+    resume_from_checkpoint: str | None = None
     num_workers: int = 0
     logging_steps: int = 10
     save_predictions: bool = True
@@ -159,6 +191,7 @@ class ExperimentConfig:
     image: ImageConfig = field(default_factory=ImageConfig)
     prompting: PromptingConfig = field(default_factory=PromptingConfig)
     lora: LoraConfigSpec = field(default_factory=LoraConfigSpec)
+    captioning: CaptioningConfig = field(default_factory=CaptioningConfig)
     training: TrainingConfig = field(default_factory=TrainingConfig)
     scoring: ScoringConfig = field(default_factory=ScoringConfig)
     sampling: SamplingConfig = field(default_factory=SamplingConfig)
@@ -473,6 +506,20 @@ def validate_config(config: ExperimentConfig) -> None:
         raise ValueError(f"Unsupported sampling mode: {config.sampling.mode}")
     if config.image.resize_mode not in {"stretch", "aspect_pad"}:
         raise ValueError(f"Unsupported image resize mode: {config.image.resize_mode}")
+    if len(config.image.augmentation.random_resized_crop_scale) != 2:
+        raise ValueError("image.augmentation.random_resized_crop_scale must contain two values.")
+    crop_min, crop_max = config.image.augmentation.random_resized_crop_scale
+    if not 0 < crop_min <= crop_max <= 1:
+        raise ValueError("image.augmentation.random_resized_crop_scale must satisfy 0 < min <= max <= 1.")
+    if len(config.image.augmentation.brightness_range) != 2:
+        raise ValueError("image.augmentation.brightness_range must contain two values.")
+    brightness_min, brightness_max = config.image.augmentation.brightness_range
+    if not 0 < brightness_min <= brightness_max:
+        raise ValueError("image.augmentation.brightness_range must satisfy 0 < min <= max.")
+    if config.captioning.batch_size <= 0:
+        raise ValueError("captioning.batch_size must be positive.")
+    if config.captioning.max_new_tokens <= 0:
+        raise ValueError("captioning.max_new_tokens must be positive.")
     if config.training.bf16 and config.training.fp16:
         raise ValueError("Config cannot enable both bf16 and fp16.")
     if config.lora.enabled and config.lora.rank <= 0:
@@ -485,10 +532,18 @@ def validate_config(config: ExperimentConfig) -> None:
         raise ValueError("Scoring completion batch size must be positive.")
     if config.training.gradient_accumulation <= 0:
         raise ValueError("Gradient accumulation must be positive.")
+    if config.training.checkpointing.save_steps < 0:
+        raise ValueError("training.checkpointing.save_steps cannot be negative.")
+    if config.training.checkpointing.max_to_keep <= 0:
+        raise ValueError("training.checkpointing.max_to_keep must be positive.")
     if config.runtime.eval_artifact_dir and config.training.epochs != 0:
         raise ValueError("runtime.eval_artifact_dir requires training.epochs=0.")
     if config.runtime.eval_artifact_dir and config.runtime.final_retrain:
         raise ValueError("runtime.eval_artifact_dir cannot be combined with runtime.final_retrain.")
+    if config.runtime.resume_from_checkpoint and config.runtime.eval_artifact_dir:
+        raise ValueError("runtime.resume_from_checkpoint cannot be combined with runtime.eval_artifact_dir.")
+    if config.runtime.resume_from_checkpoint and config.training.epochs == 0:
+        raise ValueError("runtime.resume_from_checkpoint requires training. Set training.epochs > 0.")
     if not config.lora.enabled and config.training.epochs > 0:
         raise ValueError(
             "LoRA-disabled training is not supported in this framework. "

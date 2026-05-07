@@ -4,7 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from src.config import load_experiment_config
-from src.data.dataset import ScienceQAExample
+from src.data.dataset import ScienceQAExample, attach_image_captions, load_caption_cache
 from src.modeling.lora import LoraApplicationResult
 from src.modeling.load_model import _configure_processor, load_model_and_processor_from_artifacts
 from src.prompting.formatter import PromptFormatter
@@ -267,6 +267,77 @@ def test_missing_image_path_uses_blank_image_when_image_field_enabled() -> None:
     item = dataset[0]
     assert item["image"] is not None
     assert item["image"].size == (32, 32)
+
+
+def test_caption_cache_loads_and_attaches_by_example_id(tmp_path: Path) -> None:
+    cache_dir = tmp_path / "captions"
+    cache_dir.mkdir()
+    (cache_dir / "train.jsonl").write_text(
+        '{"id": "train_001", "image_path": "images/train/train_001.png", "image_caption": "A chart with labeled axes."}\n'
+    )
+    config = load_experiment_config(
+        REPO_ROOT,
+        "ta01_dora_caption_context_512_aug",
+        cli_overrides=[f"captioning.cache_dir={cache_dir}"],
+    )
+    example = ScienceQAExample(
+        id="train_001",
+        image_path="images/train/train_001.png",
+        question="Which answer is correct?",
+        choices=["A", "B"],
+        num_choices=2,
+        answer=0,
+    )
+
+    captions = load_caption_cache(str(cache_dir), "train")
+    attached = attach_image_captions([example], config, "train")
+
+    assert captions["train_001"] == "A chart with labeled axes."
+    assert attached[0].image_caption == "A chart with labeled axes."
+
+
+def test_missing_caption_cache_raises_clear_generator_message(tmp_path: Path) -> None:
+    config = load_experiment_config(
+        REPO_ROOT,
+        "ta01_dora_caption_context_512_aug",
+        cli_overrides=[f"captioning.cache_dir={tmp_path / 'missing'}"],
+    )
+    example = ScienceQAExample(
+        id="train_001",
+        image_path="images/train/train_001.png",
+        question="Which answer is correct?",
+        choices=["A", "B"],
+        num_choices=2,
+        answer=0,
+    )
+
+    try:
+        attach_image_captions([example], config, "train")
+    except FileNotFoundError as exc:
+        assert "generate_image_captions.py" in str(exc)
+    else:
+        raise AssertionError("Expected missing caption cache to raise FileNotFoundError.")
+
+
+def test_image_augmentation_is_train_only() -> None:
+    config = load_experiment_config(REPO_ROOT, "ta01_dora_caption_context_512_aug")
+    formatter = PromptFormatter(config)
+    example = ScienceQAExample(
+        id="train_001",
+        image_path=None,
+        question="Which answer is correct?",
+        choices=["A", "B"],
+        num_choices=2,
+        answer=0,
+    )
+
+    train_dataset = train_module._build_dataset(config, formatter, split="train", examples=[example])
+    val_dataset = train_module._build_dataset(config, formatter, split="val", examples=[example])
+
+    assert train_dataset.image_transform is not None
+    assert val_dataset.image_transform is not None
+    assert train_dataset.image_transform.augment is True
+    assert val_dataset.image_transform.augment is False
 
 
 def test_plain_eval_only_run_uses_eval_datasets_without_train_split(monkeypatch, tmp_path: Path) -> None:

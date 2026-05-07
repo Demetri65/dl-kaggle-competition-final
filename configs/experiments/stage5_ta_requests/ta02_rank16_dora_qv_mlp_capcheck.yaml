@@ -1,0 +1,7 @@
+experiment_id: ta02_rank16_dora_qv_mlp_capcheck
+parent_experiment_id: c03_balanced_answer
+lora:
+  rank: 16
+  alpha: 32
+  use_dora: true
+  target_preset: qv_mlp

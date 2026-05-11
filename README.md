@@ -1,4 +1,4 @@
-# Pixels to Predictions: Visual Science QA (Kaggle Competition)
+# Pixels to Predictions: Visual Science QA (Kaggle Competition - DL Finals)
 
 This repository is the final surface for the DL Spring 2026 Pixels to Predictions Kaggle project. The official final experiment is the comprehensive training and evaluation pipeline in `DL Final Notebook.ipynb`, which achieves 76.66% on the public leaderboard. 
 

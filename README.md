@@ -49,7 +49,7 @@ The final notebook loads the trained LoRA adapter, scores every candidate answer
 2. Download the competition data and update `DATA_DIR` in `DL Final Notebook.ipynb` to point to it.
 3. Run `DL Final Notebook.ipynb` from start to finish to fine-tune the adapter, score the test examples, and generate the submission.
 
-The final adapter weights are available in this [public Google Drive folder](https://drive.google.com/drive/folders/1y5Q16JywjRZMH_NkxQeShVDV58daA4z3?usp=sharing).
+The final adapter artifacts are available in this [public Google Drive folder](https://drive.google.com/drive/folders/1y5Q16JywjRZMH_NkxQeShVDV58daA4z3?usp=sharing). The folder contains the LoRA adapter model and configuration, processor and tokenizer configuration, training arguments, and an artifact manifest. It does not include the base `HuggingFaceTB/SmolVLM-500M-Instruct` checkpoint or the competition dataset; obtain those separately.
 
 Full reproduction requires the external competition dataset, model weights, and suitable accelerator hardware. Paths and output locations may need adjustment outside the original notebook environment.
 
